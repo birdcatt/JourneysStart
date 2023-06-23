@@ -7,13 +7,12 @@ using static SlugBase.Features.FeatureTypes;
 using Debug = UnityEngine.Debug;
 using System.Linq; //for ModManager.ActiveMods.Any
 using Exception = System.Exception;
-
-using JourneysStart.Lightbringer.FisobsTaser;
 using JourneysStart.Shared;
 using JourneysStart.Lightbringer;
 using JourneysStart.Outgrowth;
-using JourneysStart.Outgrowth.FisobsSeed;
-using Fisobs.Core;
+using JourneysStart.FisobsItems;
+using JourneysStart.FisobsItems.Seed;
+using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff;
 using PlayerData = JourneysStart.Shared.PlayerStuff.PlayerData;
 
@@ -133,8 +132,7 @@ namespace JourneysStart
 
         public static void Hook()
         {
-            Content.Register(new TaserFisob());
-            Content.Register(new SeedFisob());
+            FisobsGeneral.Hook();
             LightpupGeneral.Hook();
             OutgrowthGeneral.Hook();
             SharedGeneral.Hook();

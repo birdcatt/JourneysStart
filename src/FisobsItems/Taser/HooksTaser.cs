@@ -5,7 +5,7 @@ using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using JourneysStart.Lightbringer.Data;
 using static JourneysStart.Utility;
 
-namespace JourneysStart.Lightbringer.FisobsTaser;
+namespace JourneysStart.FisobsItems.Taser;
 
 public class HooksTaser
 {
@@ -20,8 +20,9 @@ public class HooksTaser
     public static void Lantern_HitByWeapon(On.Lantern.orig_HitByWeapon orig, Lantern self, Weapon weapon)
     {
         orig(self, weapon);
-        if (SlugIsMod(self.room.game.StoryCharacter))
+        if (self.room.game.IsStorySession && SlugIsMod(self.room.game.StoryCharacter))
         {
+            Random.InitState(Time.time.GetHashCode());
             if (weapon is ExplosiveSpear || weapon is ScavengerBomb || Random.value < 0.2f)
             {
                 World world = self.room.world;
@@ -57,7 +58,7 @@ public class HooksTaser
     public static void ElectricSpear_DrawSprites(On.MoreSlugcats.ElectricSpear.orig_DrawSprites orig, MoreSlugcats.ElectricSpear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (SlugIsLightpup(self.room.game.StoryCharacter))
+        if (self.room.game.IsStorySession && SlugIsMod(self.room.game.StoryCharacter))
         {
             int electricCharge = self.abstractSpear.electricCharge;
             if (electricCharge < 3)

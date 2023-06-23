@@ -31,7 +31,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.HasUniqueSprite += SymbolButtonTogglePupButton_HasUniqueSprite;
             On.JollyCoop.JollyMenu.JollyPlayerSelector.GetPupButtonOffName += JollyPlayerSelector_GetPupButtonOffName;
             On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.LoadIcon += SymbolButtonTogglePupButton_LoadIcon;
-            On.JollyCoop.JollyMenu.SymbolButtonToggle.LoadIcon += SymbolButtonToggle_LoadIcon;
+            IL.JollyCoop.JollyMenu.SymbolButtonToggle.LoadIcon += SymbolButtonToggle_LoadIcon;
             On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.Update += SymbolButtonTogglePupButton_Update;
 
             On.JollyCoop.JollyMenu.JollyPlayerSelector.ctor += JollyPlayerSelector_ctor;
@@ -106,41 +106,55 @@ namespace JourneysStart.Shared.ArtOnScreen
                 self.uniqueSymbol.pos.y = self.size.y / 2f;
             }
         }
-        public static void SymbolButtonToggle_LoadIcon(On.JollyCoop.JollyMenu.SymbolButtonToggle.orig_LoadIcon orig, SymbolButtonToggle self)
+        public static void SymbolButtonToggle_LoadIcon(ILContext il)
         {
-            if (self.symbolNameOff.Contains(Plugin.sproutcat.value) && self.isToggled)
+            ILCursor c = new(il);
+            ILLabel label = il.DefineLabel();
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((SymbolButtonToggle self) =>
             {
-                //its ok i dont need orig right
+                return self.symbolNameOff.Contains(Plugin.sproutcat.value) && self.isToggled;
+            });
+            c.Emit(OpCodes.Brfalse, label);
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((SymbolButtonToggle self) =>
+            {
                 self.symbol.fileName = "sproutcat_pup_on";
                 self.symbol.LoadFile();
                 self.symbol.sprite.SetElementByName(self.symbol.fileName);
                 self.symbol.fileName = self.symbolNameOn; //otherwise it forces you to be a pup in menu
-                return;
-            }
-            orig(self);
+            });
+            c.Emit(OpCodes.Ret);
+
+            c.MarkLabel(label);
         }
         public static void SymbolButtonTogglePupButton_Update(On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.orig_Update orig, SymbolButtonTogglePupButton self)
         {
-            if (self.symbolNameOff.Contains(Plugin.sproutcat.value) && self.isToggled)
+            if (self.symbolNameOff.Contains(Plugin.sproutcat.value))
             {
-                if ((null == self.uniqueSymbol || self.uniqueSymbol.fileName.Contains("off")) //catches if its using the wrong unique sprite
-                && !(null != self.uniqueSymbol && "unique_sproutcat_pup_on" == self.uniqueSymbol.fileName) /*not already using the unique pup sprite*/)
+                if (self.isToggled)
                 {
-                    //self.symbolNameOn is "pup_on", not "sproutcat_pup_on" or smth
+                    if ((null == self.uniqueSymbol || self.uniqueSymbol.fileName.Contains("off")) //catches if its using the wrong unique sprite
+                    && !(null != self.uniqueSymbol && "unique_sproutcat_pup_on" == self.uniqueSymbol.fileName) /*not already using the unique pup sprite*/)
+                    {
+                        //self.symbolNameOn is "pup_on", not "sproutcat_pup_on" or smth
 
-                    if (null != self.uniqueSymbol)
-                        self.RemoveUniqueSymbol();
+                        if (null != self.uniqueSymbol)
+                            self.RemoveUniqueSymbol();
 
-                    self.uniqueSymbol = new MenuIllustration(self.menu, self, "", "unique_sproutcat_pup_on", self.size / 2f, true, true);
-                    self.subObjects.Add(self.uniqueSymbol);
-                    self.uniqueSymbol.LoadFile();
-                    self.uniqueSymbol.sprite.SetElementByName(self.uniqueSymbol.fileName);
+                        self.uniqueSymbol = new MenuIllustration(self.menu, self, "", "unique_sproutcat_pup_on", self.size / 2f, true, true);
+                        self.subObjects.Add(self.uniqueSymbol);
+                        self.uniqueSymbol.LoadFile();
+                        self.uniqueSymbol.sprite.SetElementByName(self.uniqueSymbol.fileName);
+                    }
                 }
-            }
-            else if (null != self.uniqueSymbol)
-            {
-                //just clean up, it should fix itself later in orig
-                self.RemoveUniqueSymbol();
+                else if (null != self.uniqueSymbol)
+                {
+                    //just clean up, it should fix itself later in orig
+                    self.RemoveUniqueSymbol();
+                }
             }
 
             orig(self);

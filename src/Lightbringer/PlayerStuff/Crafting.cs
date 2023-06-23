@@ -3,10 +3,12 @@ using Random = UnityEngine.Random;
 using Debug = UnityEngine.Debug;
 using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using MSC_AbstractObjectType = MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType;
-using JourneysStart.Lightbringer.FisobsTaser;
 using MoreSlugcats;
 using static JourneysStart.Utility;
 using JourneysStart.Shared.PlayerStuff;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
+using JourneysStart.FisobsItems.Taser;
 
 //this is quite painful by itself so lightbringer gets its own separate crafting cs file
 namespace JourneysStart.Lightbringer.PlayerStuff
@@ -17,7 +19,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
         {
             On.Player.GrabUpdate += Player_GrabUpdate;
             On.Player.GraspsCanBeCrafted += Player_GraspsCanBeCrafted;
-            On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
+            IL.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         }
 
         public static void Player_GrabUpdate(On.Player.orig_GrabUpdate orig, Player self, bool eu)
@@ -75,7 +77,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                 return orig(self);
             }
 
-            if (-1 != self.FreeHand() || self.input[0].y <= 0)
+            if (-1 != self.FreeHand() /*|| self.input[0].y <= 0*/)
                 return false;
 
             if (self.grasps[0].grabbed.abstractPhysicalObject is TaserAbstract t1 && self.grasps[1].grabbed.abstractPhysicalObject is TaserAbstract t2)
@@ -84,9 +86,9 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                     return false;
             }
 
-            //bool graspIsEdible = false;
+            bool graspIsEdible = false;
             bool graspIsSpear = false;
-            //bool graspIsFullElec = false; //electric spear or taser
+            bool graspIsFullElec = false; //electric spear or taser
             bool graspIsRock = false;
             bool graspIsElecAnyCharge = false; //electric with charge > 0
 
@@ -103,23 +105,25 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                 {
                     if (!graspIsElecAnyCharge)
                         graspIsElecAnyCharge = GraspIsSpearWithCharge(grasp);
-                    //graspIsFullElec = GraspIsElectricSpearFullCharge(grasp);
+                    if (!graspIsFullElec)
+                        graspIsFullElec = GraspIsElectricSpearFullCharge(grasp);
                     graspIsSpear = true;
                 }
                 else if (abstrType == TaserFisob.AbstrTaser)
                 {
                     if (!graspIsElecAnyCharge)
                         graspIsElecAnyCharge = GraspIsTaserWithCharge(grasp);
-                    //graspIsFullElec = GraspIsTaserFullCharge(grasp);
+                    if (!graspIsFullElec)
+                        graspIsFullElec = GraspIsTaserFullCharge(grasp);
                 }
-                //else if (grasp.grabbed is IPlayerEdible) //yoo thanks NaClO
-                //    graspIsEdible = true;
+                else if (grasp.grabbed is IPlayerEdible) //yoo thanks NaClO
+                    graspIsEdible = true;
                 else if (abstrType == AbstractObjectType.Rock)
                     graspIsRock = true;
             }
 
-            //if (graspIsEdible && (graspIsFullElec && self.FoodInStomach < self.MaxFoodInStomach || graspIsSpear && self.FoodInStomach < 1))
-            //    return false;
+            if (graspIsEdible && (graspIsFullElec && self.FoodInStomach < self.MaxFoodInStomach || graspIsSpear && self.FoodInStomach < 1))
+                return false;
 
             if (graspIsRock && graspIsSpear && !graspIsElecAnyCharge) //rock + elec spear = shaving the spear
                 return false;
@@ -127,94 +131,105 @@ namespace JourneysStart.Lightbringer.PlayerStuff
             return null != CraftingLibrary.GetObjectType(self.grasps[0], self.grasps[1]);
         }
 
-        public static void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
+        public static void Player_SpitUpCraftedObject(ILContext il)
         {
-            if (Plugin.lghtbrpup != self.slugcatStats.name)
+            ILCursor c = new(il);
+            ILLabel label = il.DefineLabel();
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
             {
-                orig(self);
-                return;
-            }
+                return Plugin.lghtbrpup == self.slugcatStats.name;
+            });
+            c.Emit(OpCodes.Brfalse, label);
 
-            AbstractPhysicalObject item = CraftingLibrary.GetCraftingResult(self);
-
-            if (null == item)
-                return;
-
-            self.craftingTutorial = true;
-
-            AbstractObjectType graspA = self.grasps[0].grabbed.abstractPhysicalObject.type;
-            AbstractObjectType graspB = self.grasps[1].grabbed.abstractPhysicalObject.type;
-
-            if (TaserFisob.AbstrTaser == graspA && TaserFisob.AbstrTaser == graspB)
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
             {
-                ShortCircuitElectricGrasps(self);
-                return;
-            }
-
-            bool spawnSecondItem = false;
-
-            if (AbstractObjectType.Spear == item.type || TaserFisob.AbstrTaser == item.type)
-            {
-                if (AbstractObjectType.Rock == graspA && AbstractObjectType.Rock == graspB)
-                {
-                    (item as AbstractSpear).electric = false;
-                    self.room.PlaySound(SoundID.Spear_Fragment_Bounce, self.mainBodyChunk);
-                    AddCraftingSpark(self);
-                }
-                else if (ElectricCrafting(self, ref item, ref spawnSecondItem))
-                    return;
-            }
-            else
-                self.room.PlaySound(SoundID.Slugcat_Swallow_Item, self.mainBodyChunk);
-
-            #region delete grasps
-            for (int i = 0; i < 2; i++)
-            {
-                AbstractPhysicalObject grasp = self.grasps[i].grabbed.abstractPhysicalObject;
-
-                if (self.room.game.session is StoryGameSession story)
-                    story.RemovePersistentTracker(grasp);
-
-                self.ReleaseGrasp(i);
-
-                grasp.LoseAllStuckObjects();
-                grasp.realizedObject.RemoveFromRoom();
-                self.room.abstractRoom.RemoveEntity(grasp);
-            }
-            #endregion
-
-            if (item is TaserAbstract t)
-                Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning taser with a charge of {t.electricCharge}");
-            else if (item is AbstractSpear s && s.electric)
-                Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning electric spear with a charge of {s.electricCharge}");
-            else
-                Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning crafted item {item.type}");
-
-            SpawnItemInHand(self, item);
-
-            if (spawnSecondItem && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
-            {
-                item = playerData.Lightpup.crafting_SecondItem.Get();
+                AbstractPhysicalObject item = CraftingLibrary.GetCraftingResult(self);
 
                 if (null == item)
+                    return;
+
+                self.craftingTutorial = true;
+
+                AbstractObjectType graspA = self.grasps[0].grabbed.abstractPhysicalObject.type;
+                AbstractObjectType graspB = self.grasps[1].grabbed.abstractPhysicalObject.type;
+
+                if (TaserFisob.AbstrTaser == graspA && TaserFisob.AbstrTaser == graspB)
                 {
-                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Attempting to spawn second item--but item is null?!");
+                    ShortCircuitElectricGrasps(self);
                     return;
                 }
 
-                int charge = -1; //just for the debug log
-                if (item is AbstractSpear spear)
-                    charge = spear.electricCharge;
-                else if (item is TaserAbstract taser)
-                    charge = taser.electricCharge;
-                Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning second item ({item.type}) with a charge of {charge}");
+                bool spawnSecondItem = false;
 
-                self.room.PlaySound(SoundID.Zapper_Zap, self.firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
-                AddCraftingLight(self);
-                AddCraftingSpark(self);
+                if (AbstractObjectType.Spear == item.type || TaserFisob.AbstrTaser == item.type)
+                {
+                    if (AbstractObjectType.Rock == graspA && AbstractObjectType.Rock == graspB)
+                    {
+                        (item as AbstractSpear).electric = false;
+                        self.room.PlaySound(SoundID.Spear_Fragment_Bounce, self.mainBodyChunk);
+                        AddCraftingSpark(self);
+                    }
+                    else if (ElectricCrafting(self, ref item, ref spawnSecondItem))
+                        return;
+                }
+                else
+                    self.room.PlaySound(SoundID.Slugcat_Swallow_Item, self.mainBodyChunk);
+
+                //delete grasps in hand
+                for (int i = 0; i < 2; i++)
+                {
+                    AbstractPhysicalObject grasp = self.grasps[i].grabbed.abstractPhysicalObject;
+
+                    if (self.room.game.session is StoryGameSession story)
+                        story.RemovePersistentTracker(grasp);
+
+                    self.ReleaseGrasp(i);
+
+                    grasp.LoseAllStuckObjects();
+                    grasp.realizedObject.RemoveFromRoom();
+                    self.room.abstractRoom.RemoveEntity(grasp);
+                }
+
+                if (item is TaserAbstract t)
+                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning taser with a charge of {t.electricCharge}");
+                else if (item is AbstractSpear s && s.electric)
+                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning electric spear with a charge of {s.electricCharge}");
+                else
+                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning crafted item {item.type}");
 
                 SpawnItemInHand(self, item);
-            }
+
+                if (spawnSecondItem && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
+                {
+                    item = playerData.Lightpup.crafting_SecondItem.Get();
+
+                    if (null == item)
+                    {
+                        Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Attempting to spawn second item--but item is null?!");
+                        return;
+                    }
+
+                    int charge = -1; //just for the debug log
+                    if (item is AbstractSpear spear)
+                        charge = spear.electricCharge;
+                    else if (item is TaserAbstract taser)
+                        charge = taser.electricCharge;
+                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning second item ({item.type}) with a charge of {charge}");
+
+                    self.room.PlaySound(SoundID.Zapper_Zap, self.firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
+                    AddCraftingLight(self);
+                    AddCraftingSpark(self);
+
+                    SpawnItemInHand(self, item);
+                }
+                return;
+            });
+            c.Emit(OpCodes.Ret);
+
+            c.MarkLabel(label);
         }
         public static bool ElectricCrafting(Player self, ref AbstractPhysicalObject item, ref bool spawnSecondItem)
         {

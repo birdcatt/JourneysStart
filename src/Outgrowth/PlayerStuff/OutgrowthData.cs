@@ -13,6 +13,15 @@ sealed class OutgrowthData
     public int SeedSpitUpMax;
     public bool AteABugThisCycle;
 
+    public int[] spriteIndexes;
+    //0 - body scar
+    //1 - mushroom necklace
+    //2 - face scar?
+    //check fluff isnt in here
+    public const int BodyScarIndex = 0;
+
+    public CheekFluff cheekFluff;
+
     public OutgrowthData(PlayerData playerData)
     {
         this.playerData = playerData;

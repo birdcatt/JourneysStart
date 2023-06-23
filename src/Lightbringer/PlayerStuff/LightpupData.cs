@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 using Debug = UnityEngine.Debug;
 using Colour = UnityEngine.Color;
 using Flare = JourneysStart.Lightbringer.Data.Flare;
-using JourneysStart.Lightbringer.FisobsTaser;
+using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff;
 
 namespace JourneysStart.Lightbringer.PlayerStuff;

@@ -2,11 +2,11 @@
 //using RWCustom;
 //using Smoke;
 
-namespace JourneysStart.Outgrowth.FisobsSeed;
+namespace JourneysStart.FisobsItems.Seed;
 
-public class OutgrowthSeed : PlayerCarryableItem, IDrawable, IPlayerEdible
+public class SproutSeed : PlayerCarryableItem, IDrawable, IPlayerEdible
 {
-    public OutgrowthSeed(SeedAbstract abstr) : base(abstr)
+    public SproutSeed(SeedAbstract abstr) : base(abstr)
     {
         bodyChunks = new BodyChunk[1];
         bodyChunks[0] = new BodyChunk(this, 0, new Vector2(0f, 0f), 5f, 0.12f);

@@ -1,6 +1,6 @@
 ﻿using Fisobs.Properties;
 
-namespace JourneysStart.Lightbringer.FisobsTaser;
+namespace JourneysStart.FisobsItems.Taser;
 
 public class TaserProperties : ItemProperties
 {

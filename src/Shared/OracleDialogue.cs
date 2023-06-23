@@ -48,7 +48,7 @@ namespace JourneysStart.Shared
                 && 0 == story.saveState.miscWorldSaveData.SLOracleState.playerEncounters)
             {
                 story.saveState.miscWorldSaveData.SLOracleState.playerEncounters++;
-                self.dialogBox.messages.Clear(); //stop sayin stuff
+                self.dialogBox.messages.RemoveAll(x => x.text == "Welcome back little messenger." || x.text == "Thank you for visiting me, but I'm afraid there is nothing here for you.");
             }
         }
 

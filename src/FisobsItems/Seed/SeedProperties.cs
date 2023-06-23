@@ -1,6 +1,6 @@
 ﻿using Fisobs.Properties;
 
-namespace JourneysStart.Outgrowth.FisobsSeed;
+namespace JourneysStart.FisobsItems.Seed;
 
 public class SeedProperties : ItemProperties
 {

@@ -3,7 +3,8 @@ using Mono.Cecil.Cil;
 using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using System;
 using Debug = UnityEngine.Debug;
-using JourneysStart.Outgrowth.FisobsSeed;
+using JourneysStart.FisobsItems.Seed;
+using JourneysStart.Shared.PlayerStuff;
 
 namespace JourneysStart.Outgrowth.Food;
 
@@ -22,13 +23,13 @@ public class SeedSpitup
     {
         if (Plugin.sproutcat == self.slugcatStats.name)
         {
-            if (Plugin.PlayerDataCWT.TryGetValue(self, out var p) && p.IsSproutcat)
+            if (Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p) && p.IsSproutcat)
             {
                 return p.Sproutcat.SeedSpitUpMax > 0 && null == self.objectInStomach && self.FoodInStomach > 0 && -1 != self.FreeHand();
             }
             else
             {
-                Debug.Log($"{Plugin.MOD_NAME}: (CanRegurgitate) Unable to get value from OutgrowthCWT");
+                Debug.Log($"{Plugin.MOD_NAME}: (CanRegurgitate) Unable to get value from PlayerDataCWT");
                 return false;
             }
         }

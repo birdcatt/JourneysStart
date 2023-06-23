@@ -9,7 +9,6 @@ namespace JourneysStart.Lightbringer;
 
 public class RoomScripts
 {
-
     #region GATE_SB_OE den scripts
     public class LightpupGateStart : UpdatableAndDeletable
     {
@@ -165,5 +164,4 @@ public class RoomScripts
     #endregion
 
     //then add ending script, inherit from OE_NPCCONTROL
-
 }

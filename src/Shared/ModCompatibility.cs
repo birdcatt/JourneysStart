@@ -34,11 +34,8 @@ public class ModCompatibility
                 CheckBodySprite(self, sLeaser, rCam, pData.Lightpup.stripeIndex, customSprite);
             }
 
-            if (Utility.SlugIsMod(name))
-            {
-                customSprite = customization.CustomSprite("TAIL");
-                CheckTailSprite(self, sLeaser, customSprite);
-            }
+            customSprite = customization.CustomSprite("TAIL");
+            CheckTailSprite(self, sLeaser, customSprite);
         }
 
         #region lightpup

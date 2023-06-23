@@ -7,7 +7,7 @@ using Custom = RWCustom.Custom;
 using MoreSlugcats;
 using static JourneysStart.Utility;
 
-namespace JourneysStart.Lightbringer.FisobsTaser;
+namespace JourneysStart.FisobsItems.Taser;
 
 public class Taser : Rock
 {

@@ -1,10 +1,10 @@
-﻿using JourneysStart.Lightbringer.FisobsTaser;
-using JourneysStart.Lightbringer.Data;
+﻿using JourneysStart.Lightbringer.Data;
 using SlugBase.Features;
 using SlugBase;
 using System.Linq;
 using JourneysStart.Lightbringer.OracleStuff;
 using JourneysStart.Lightbringer.PlayerStuff;
+using JourneysStart.FisobsItems.Taser;
 
 namespace JourneysStart.Lightbringer
 {
@@ -13,7 +13,6 @@ namespace JourneysStart.Lightbringer
         public static void Hook()
         {
             FRDData.Hook();
-            HooksTaser.Hook();
             Crafting.Hook();
             PearlDialogue.Hook();
             GeneralHooks();

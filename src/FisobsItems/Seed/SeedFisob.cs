@@ -3,7 +3,7 @@ using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
 
-namespace JourneysStart.Outgrowth.FisobsSeed;
+namespace JourneysStart.FisobsItems.Seed;
 
 public class SeedFisob : Fisob
 {

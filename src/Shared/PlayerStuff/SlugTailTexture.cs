@@ -6,6 +6,7 @@ using UnityEngine;
 using Colour = UnityEngine.Color;
 using Custom = RWCustom.Custom;
 
+//fr just beecat in here
 namespace JourneysStart.Shared.PlayerStuff
 {
     public class SlugTailTexture
@@ -14,7 +15,7 @@ namespace JourneysStart.Shared.PlayerStuff
         public Colour BodyColour;
         public Colour PatternColour; //used to be called StripeColour until i got sproutcat
         public FAtlas TailAtlas;
-        public WeakReference<Player> playerRef; //yo what is this
+        public WeakReference<Player> playerRef;
 
         public Colour OldPatternColour; //gets changed from the flare charges and is used for hypothermia and when going thru pipes
         public bool usingDMSTailSprite; //dont colour in tail gdi
@@ -28,6 +29,7 @@ namespace JourneysStart.Shared.PlayerStuff
 
             if (!Utility.SlugIsMod(name))
             {
+                Debug.Log($"{Plugin.MOD_NAME}: Player {player.slugcatStats.name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
                 return;
             }
 
@@ -55,7 +57,7 @@ namespace JourneysStart.Shared.PlayerStuff
         {
             try
             {
-                TailAtlas.Unload();
+                TailAtlas?.Unload();
             }
             catch (Exception e)
             {
@@ -140,7 +142,7 @@ namespace JourneysStart.Shared.PlayerStuff
             if (!playerRef.TryGetTarget(out _))
                 return;
 
-            TailAtlas?.Unload();
+            //TailAtlas?.Unload();
 
             if (usingDMSTailSprite)
                 return;
@@ -179,5 +181,7 @@ namespace JourneysStart.Shared.PlayerStuff
             }
             texture.Apply(false);
         }
+        //in gameplay, instead use GetPixelData and SetPixelData
+        //otherwise its slow
     }
 }

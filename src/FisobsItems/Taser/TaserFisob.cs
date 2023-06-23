@@ -4,7 +4,7 @@ using Fisobs.Properties;
 using Fisobs.Sandbox;
 //using Colour = UnityEngine.Color;
 
-namespace JourneysStart.Lightbringer.FisobsTaser;
+namespace JourneysStart.FisobsItems.Taser;
 
 public class TaserFisob : Fisob
 {

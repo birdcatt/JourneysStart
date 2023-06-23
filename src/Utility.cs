@@ -13,8 +13,8 @@ using System.Text.RegularExpressions;
 using System.Text;
 using Random = UnityEngine.Random;
 using Exception = System.Exception;
-using JourneysStart.Lightbringer.FisobsTaser;
 using static JourneysStart.Plugin;
+using JourneysStart.FisobsItems.Taser;
 
 namespace JourneysStart
 {

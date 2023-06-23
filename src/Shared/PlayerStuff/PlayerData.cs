@@ -2,6 +2,7 @@
 using JourneysStart.Outgrowth.PlayerStuff;
 using Colour = UnityEngine.Color;
 using System;
+using Debug = UnityEngine.Debug;
 
 namespace JourneysStart.Shared.PlayerStuff;
 
@@ -15,12 +16,14 @@ sealed class PlayerData
     public LightpupData Lightpup;
     public OutgrowthData Sproutcat;
 
+    public bool SpritesInited = false;
     public SlugTailTexture tailPattern;
 
     public ModCompatibility.DressMySlugcatPatch dmsModCompat;
 
     public PlayerData(Player player)
     {
+        Debug.Log($"{Plugin.MOD_NAME}: Adding player {player.playerState.playerNumber} ({player.SlugCatClass}) to PlayerDataCWT");
         playerRef = new WeakReference<Player>(player);
 
         IsLightpup = Plugin.lghtbrpup == player.slugcatStats.name;
@@ -47,7 +50,7 @@ sealed class PlayerData
         Sproutcat?.Update();
     }
 
-    public void DressMySlugcat_ModCompat_DrawSprites(RoomCamera rCam, RoomCamera.SpriteLeaser sLeaser)
+    public void ModCompat_DressMySlugcat_DrawSprites(RoomCamera rCam, RoomCamera.SpriteLeaser sLeaser)
     {
         if (Plugin.ModEnabled_DressMySlugcat && playerRef.TryGetTarget(out Player player))
         {

@@ -1,6 +1,6 @@
 ﻿using Fisobs.Core;
 
-namespace JourneysStart.Lightbringer.FisobsTaser;
+namespace JourneysStart.FisobsItems.Taser;
 
 public class TaserAbstract : AbstractPhysicalObject
 {

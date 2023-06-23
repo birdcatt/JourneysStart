@@ -58,12 +58,15 @@ namespace JourneysStart.Shared.ArtOnScreen
             ILCursor c = new(il);
 
             c.GotoNext(MoveType.Before, i => i.MatchLdarg(2), i => i.MatchLdsfld<SlideShowID>("WhiteIntro"));
+            //find and go before SlideShowID.WhiteIntro
 
-            c.Emit(OpCodes.Ldarg_0);
+            //loading the arguments
+            c.Emit(OpCodes.Ldarg_0); //this is self
             c.Emit(OpCodes.Ldarg_1);
             c.Emit(OpCodes.Ldarg_2);
             c.EmitDelegate((SlideShow self, ProcessManager manager, SlideShowID slideShowID) =>
             {
+                //EmitDelegate is how you insert normal C# code in an IL hook
                 if (LightpupIntroSlideShow == slideShowID)
                 {
                     Debug.Log($"{Plugin.MOD_NAME}: (Cutscenes) Playing slideshow {LightpupIntroSlideShow.value}");
