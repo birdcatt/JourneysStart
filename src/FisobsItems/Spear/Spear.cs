@@ -1,5 +1,5 @@
 ﻿namespace JourneysStart.FisobsItems.Spear;
 
-public class SproutSpear
+public class Spear
 {
 }

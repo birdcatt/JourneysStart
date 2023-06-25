@@ -63,6 +63,14 @@ public class PlayerGrafHooks
             tail.UVvertices[i] = uv;
         }
     }
+    public static void AddNewSpritesToContainer(ref RoomCamera.SpriteLeaser sLeaser, ref RoomCamera rCam, int index)
+    {
+        //makes it so body stripes dont go on top of every creature
+        rCam.ReturnFContainer("Foreground").RemoveChild(sLeaser.sprites[index]);
+        rCam.ReturnFContainer("Midground").AddChild(sLeaser.sprites[index]);
+        sLeaser.sprites[index].MoveToBack(); //so stripes wont go in front when being jolly carried
+        sLeaser.sprites[index].MoveBehindOtherNode(sLeaser.sprites[9]); //stripes behind face
+    }
     #endregion
 
     public static void PlayerGraphics_MSCUpdate(On.PlayerGraphics.orig_MSCUpdate orig, PlayerGraphics self)
@@ -212,23 +220,21 @@ public class PlayerGrafHooks
             //rotund world compatibility so stripes follow the body scale
             if (playerData.IsLightpup)
             {
-                if (Plugin.SkinnyScale_Index1.TryGet(self.player, out float scale1) && sLeaser.sprites[1].scale != scale1)
+                if (Plugin.SkinnyScale_Index1.TryGet(self.player, out float scale1) && sLeaser.sprites[1].scale != scale1
+                    && Plugin.StripeScale.TryGet(self.player, out float stripeScale))
                 {
-                    if (Plugin.StripeScale.TryGet(self.player, out float stripeScale))
-                    {
-                        int stripeIndex = playerData.Lightpup.stripeIndex;
-                        float scaleRatioX = sLeaser.sprites[1].scaleX / scale1;
-                        float scaleRatioY = sLeaser.sprites[1].scaleY / scale1;
-                        sLeaser.sprites[stripeIndex].scaleX = stripeScale * scaleRatioX;
-                        sLeaser.sprites[stripeIndex].scaleY = stripeScale * scaleRatioY;
-                    }
+                    int stripeIndex = playerData.Lightpup.stripeIndex;
+                    float scaleRatioX = sLeaser.sprites[1].scaleX / scale1;
+                    float scaleRatioY = sLeaser.sprites[1].scaleY / scale1;
+                    sLeaser.sprites[stripeIndex].scaleX = stripeScale * scaleRatioX;
+                    sLeaser.sprites[stripeIndex].scaleY = stripeScale * scaleRatioY;
                 }
             }
             else if (playerData.IsSproutcat)
             {
                 int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BodyScarIndex];
-                sLeaser.sprites[bodyScarIndex].scaleX = sLeaser.sprites[0].scaleX /*+ sLeaser.sprites[0].scaleX / 10f*/;
-                sLeaser.sprites[bodyScarIndex].scaleY = sLeaser.sprites[0].scaleY + 0.5f;
+                sLeaser.sprites[bodyScarIndex].scaleX = sLeaser.sprites[1].scaleX;
+                sLeaser.sprites[bodyScarIndex].scaleY = sLeaser.sprites[1].scaleY;
             }
         }
     }
@@ -239,24 +245,14 @@ public class PlayerGrafHooks
         {
             if (pData.IsLightpup)
             {
-                int spriteLen = pData.Lightpup.stripeIndex;
-
-                //makes it so body stripes dont go on top of every creature
-                rCam.ReturnFContainer("Foreground").RemoveChild(sLeaser.sprites[spriteLen]);
-                rCam.ReturnFContainer("Midground").AddChild(sLeaser.sprites[spriteLen]);
-
+                AddNewSpritesToContainer(ref sLeaser, ref rCam, pData.Lightpup.stripeIndex);
                 sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[1]); //tail behind hips
-                sLeaser.sprites[spriteLen].MoveToBack(); //so stripes wont go in front when being jolly carried
-                sLeaser.sprites[spriteLen].MoveBehindOtherNode(sLeaser.sprites[9]); //stripes behind face
             }
             else if (pData.IsSproutcat)
             {
                 foreach (int i in pData.Sproutcat.spriteIndexes)
                 {
-                    rCam.ReturnFContainer("Foreground").RemoveChild(sLeaser.sprites[i]);
-                    rCam.ReturnFContainer("Midground").AddChild(sLeaser.sprites[i]);
-                    sLeaser.sprites[i].MoveToBack();
-                    sLeaser.sprites[i].MoveBehindOtherNode(sLeaser.sprites[9]);
+                    AddNewSpritesToContainer(ref sLeaser, ref rCam, i);
                 }
                 pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, rCam.ReturnFContainer("Midground"));
             }

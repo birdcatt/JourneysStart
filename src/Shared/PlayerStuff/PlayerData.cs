@@ -16,24 +16,28 @@ sealed class PlayerData
     public LightpupData Lightpup;
     public OutgrowthData Sproutcat;
 
-    public bool SpritesInited = false;
+    public bool SpritesInited;
     public SlugTailTexture tailPattern;
 
     public ModCompatibility.DressMySlugcatPatch dmsModCompat;
 
     public PlayerData(Player player)
     {
-        Debug.Log($"{Plugin.MOD_NAME}: Adding player {player.playerState.playerNumber} ({player.SlugCatClass}) to PlayerDataCWT");
+        Debug.Log($"{Plugin.MOD_NAME}: Adding {player.SlugCatClass} player {player.playerState.playerNumber} to PlayerDataCWT");
         playerRef = new WeakReference<Player>(player);
 
-        IsLightpup = Plugin.lghtbrpup == player.slugcatStats.name;
-        IsSproutcat = Plugin.sproutcat == player.slugcatStats.name;
-        IsModcat = IsLightpup || IsSproutcat;
-
-        if (IsLightpup)
+        SlugcatStats.Name name = player.slugcatStats.name;
+        if (Plugin.lghtbrpup == name)
+        {
+            IsLightpup = true;
             Lightpup = new(this);
-        else if (IsSproutcat)
+        }
+        else if (Plugin.sproutcat == name)
+        {
+            IsSproutcat = true;
             Sproutcat = new(this);
+        }
+        IsModcat = IsLightpup || IsSproutcat;
 
         tailPattern = new(player);
 

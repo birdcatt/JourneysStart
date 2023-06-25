@@ -73,7 +73,7 @@ namespace JourneysStart.Shared.ArtOnScreen
 
                     if (manager.musicPlayer != null)
                     {
-                        self.waitForMusic = "RW_Intro_Theme";
+                        self.waitForMusic = "Also_Pictures_of_the_Past-Lightbringer";
                         self.stall = true;
                         manager.musicPlayer.MenuRequestsSong(self.waitForMusic, 1.5f, 40f);
                     }

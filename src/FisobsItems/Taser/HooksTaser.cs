@@ -20,7 +20,7 @@ public class HooksTaser
     public static void Lantern_HitByWeapon(On.Lantern.orig_HitByWeapon orig, Lantern self, Weapon weapon)
     {
         orig(self, weapon);
-        if (self.room.game.IsStorySession && SlugIsMod(self.room.game.StoryCharacter))
+        if (self.room?.game.session is StoryGameSession story && SlugIsMod(story.game.StoryCharacter))
         {
             Random.InitState(Time.time.GetHashCode());
             if (weapon is ExplosiveSpear || weapon is ScavengerBomb || Random.value < 0.2f)
@@ -58,8 +58,9 @@ public class HooksTaser
     public static void ElectricSpear_DrawSprites(On.MoreSlugcats.ElectricSpear.orig_DrawSprites orig, MoreSlugcats.ElectricSpear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (self.room.game.IsStorySession && SlugIsMod(self.room.game.StoryCharacter))
+        if (self.room?.game.session is StoryGameSession story && SlugIsMod(story.game.StoryCharacter))
         {
+            //remember to null check rooms
             int electricCharge = self.abstractSpear.electricCharge;
             if (electricCharge < 3)
             {
@@ -75,7 +76,7 @@ public class HooksTaser
     {
         if (obj is Taser t)
         {
-            if (t.abstractTaser.electricCharge > 0)
+            if (t.AbstractTaser.electricCharge > 0)
             {
                 //from orig spear section
                 if (!pickupDropInsteadOfWeaponSelection && (self.currentViolenceType == ViolenceType.NonLethal || self.currentViolenceType == ViolenceType.ForFun))
@@ -115,9 +116,9 @@ public class HooksTaser
                 }
             }
 
-            if (taser.abstractTaser.electricCharge > 0)
+            if (taser.AbstractTaser.electricCharge > 0)
             {
-                return Mathf.Min(taser.abstractTaser.electricCharge + 1, 3); //max 3 score
+                return Mathf.Min(taser.AbstractTaser.electricCharge + 1, 3); //max 3 score
             }
 
             //from orig rock section
@@ -125,7 +126,7 @@ public class HooksTaser
             for (int i = 0; i < self.scavenger.grasps.Length; i++)
             {
                 if (self.scavenger.grasps[i] != null
-                    && (self.scavenger.grasps[i].grabbed is Rock || self.scavenger.grasps[i].grabbed is Taser t && t.abstractTaser.electricCharge == 0)
+                    && (self.scavenger.grasps[i].grabbed is Rock || self.scavenger.grasps[i].grabbed is Taser t && t.AbstractTaser.electricCharge == 0)
                     && self.scavenger.grasps[i].grabbed != obj)
                 {
                     num++;

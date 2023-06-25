@@ -43,7 +43,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                 if (self.FoodInStomach <= 0) //needs at least 1 pip to fail and spark
                     return false;
 
-                if (!self.GraspsCanBeCrafted())
+                if (!self.GraspsCanBeCrafted()) //should return false is grasp is null
                     return false;
 
                 Creature.Grasp graspA = self.grasps[0];
@@ -72,12 +72,13 @@ namespace JourneysStart.Lightbringer.PlayerStuff
 
         public static bool Player_GraspsCanBeCrafted(On.Player.orig_GraspsCanBeCrafted orig, Player self)
         {
+            bool val = orig(self);
             if (Plugin.lghtbrpup != self.slugcatStats.name)
             {
-                return orig(self);
+                return val;
             }
 
-            if (-1 != self.FreeHand() /*|| self.input[0].y <= 0*/)
+            if (-1 != self.FreeHand() || self.input[0].y <= 0)
                 return false;
 
             if (self.grasps[0].grabbed.abstractPhysicalObject is TaserAbstract t1 && self.grasps[1].grabbed.abstractPhysicalObject is TaserAbstract t2)
@@ -246,7 +247,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
             bool graspIsFullElecSpear = false;
             bool graspIsFullTaser = false;
 
-            EntityID spearID = self.room.game.GetNewID();
+            EntityID spearID = self.room.game.GetNewID(); //EntityID is a struct and non-nullable
             EntityID taserID = self.room.game.GetNewID();
 
             for (int i = 0; i < 2; i++)
@@ -457,10 +458,10 @@ namespace JourneysStart.Lightbringer.PlayerStuff
             if (!ModManager.MSC || null == graspA || null == graspB)
                 return null;
 
-            AbstractObjectType objA = GraspIsCraftable(graspA);
-            AbstractObjectType objB = GraspIsCraftable(graspB);
+            AbstractObjectType objA;
+            AbstractObjectType objB;
 
-            if (null == objA || null == objB)
+            if (null == (objA = GraspIsCraftable(graspA)) || null == (objB = GraspIsCraftable(graspB)))
                 return null;
 
             return craftingTable.ContainsKey((objA, objB)) ? craftingTable[(objA, objB)] : null;

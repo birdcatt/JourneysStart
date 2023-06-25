@@ -7,6 +7,6 @@ public class SeedAbstract : AbstractConsumable
     public override void Realize()
     {
         base.Realize();
-        realizedObject ??= new SproutSeed(this);
+        realizedObject ??= new Seed(this);
     }
 }

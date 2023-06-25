@@ -1,8 +1,8 @@
-﻿using Vector2 = UnityEngine.Vector2;
-using Mathf = UnityEngine.Mathf;
-using Debug = UnityEngine.Debug;
-using RWCustom;
+﻿using RWCustom;
 using System;
+using Debug = UnityEngine.Debug;
+using Mathf = UnityEngine.Mathf;
+using Vector2 = UnityEngine.Vector2;
 
 namespace JourneysStart.Outgrowth.PlayerStuff;
 
@@ -10,10 +10,11 @@ public class CheekFluff
 {
     public WeakReference<Player> playerRef;
 
-    public string spriteName = "LizardScaleA0";
+    public const string spriteName = "LizardScaleA2";
 
     public readonly int startIndex;
     public readonly int endIndex;
+    public readonly int lowerFluffIndex;
 
     public Vector2[] scalePos;
     public PlayerGraphics.AxolotlScale[] scales;
@@ -23,7 +24,7 @@ public class CheekFluff
         playerRef = new WeakReference<Player>(pGraf.player);
         this.startIndex = startIndex;
 
-        scalePos = new Vector2[6];
+        scalePos = new Vector2[4];
         scales = new PlayerGraphics.AxolotlScale[scalePos.Length];
 
         for (int i = 0; i < scales.Length; i++)
@@ -33,6 +34,7 @@ public class CheekFluff
         }
 
         endIndex = startIndex + scalePos.Length;
+        lowerFluffIndex = startIndex + scalePos.Length / 2;
     }
 
     public void Update()
@@ -42,9 +44,10 @@ public class CheekFluff
 
         PlayerGraphics pGraf = player.graphicsModule as PlayerGraphics;
         
-        int index = 0;
         for (int i = startIndex; i < endIndex; i++)
         {
+            int index = i - startIndex;
+
             Vector2 pos = player.bodyChunks[0].pos;
             Vector2 pos2 = player.bodyChunks[1].pos;
             float num = 0f;
@@ -52,13 +55,14 @@ public class CheekFluff
             int num3 = index % (scales.Length / 2);
             float num4 = num2 / (scales.Length / 2);
 
+            float xIncr = 4f;
             if (i % 2 == 0)
             {
-                pos.x += 5f;
+                pos.x += xIncr;
             }
             else
             {
-                pos.x -= 5f;
+                pos.x -= xIncr;
             }
 
             Vector2 a = Custom.rotateVectorDeg(Custom.DegToVec(0f), num3 * num4 - num2 / 2f + num + 90f);
@@ -87,21 +91,20 @@ public class CheekFluff
             scales[index].ConnectToPoint(pos, scales[index].length, true, 0f, new Vector2(0f, 0f), 0f, 0f);
 
             scales[index].Update();
-
-            index++;
         }
     }
 
     public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser)
     {
         Debug.Log($"{Plugin.MOD_NAME}: Initiating cheek fluff sprites");
+        float graphicHeight = Futile.atlasManager.GetElementWithName(spriteName).sourcePixelSize.y;
         for (int i = startIndex; i < endIndex; i++)
         {
             Debug.Log($"\tCreating new sprite at index {i}");
             sLeaser.sprites[i] = new(spriteName)
             {
                 scaleX = 1f,
-                scaleY = 5f / Futile.atlasManager.GetElementWithName(spriteName).sourcePixelSize.y,
+                scaleY = 10f / graphicHeight,
                 anchorY = 0.1f
             };
         }
@@ -116,30 +119,44 @@ public class CheekFluff
     }
     public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, float timeStacker, Vector2 camPos)
     {
-        int index = 0;
         for (int i = startIndex; i < endIndex; i++)
         {
             Vector2 vector = new(sLeaser.sprites[9].x + camPos.x, sLeaser.sprites[9].y + camPos.y);
-            float num = 0f;
+            vector.y += 1.5f;
 
-            if (i % 2 == 0)
+            float xIncr = 4f;
+            float rotationAngle = 105f;
+            if (i >= lowerFluffIndex)
             {
-                vector.x += 5f;
+                xIncr -= 1.5f;
+                rotationAngle -= 65f;
+                vector.y -= 1f;
             }
+
+            if (i % 2 == 0) //(right side/red)
+            {
+                rotationAngle *= -1;
+                vector.x += xIncr;
+                //sLeaser.sprites[i].scale *= -1; //should flip the sprite, if not try scaleX and scaleY
+            }
+            else //(left side/blue)
+            {
+                vector.x -= xIncr;
+            }
+
+            if (i >= lowerFluffIndex)
+                sLeaser.sprites[i].color = UnityEngine.Color.gray;
+            else if (i % 2 == 0)
+                sLeaser.sprites[i].color = UnityEngine.Color.red;
             else
-            {
-                vector.x -= 5f;
-            }
+                sLeaser.sprites[i].color = UnityEngine.Color.blue;
+            //sLeaser.sprites[i].color = sLeaser.sprites[1].color; //actual colour
 
-            if (i != 0)
-                num = 180f;
+            int index = i - startIndex; //for the scale array
 
             sLeaser.sprites[i].x = vector.x - camPos.x;
             sLeaser.sprites[i].y = vector.y - camPos.y;
-            sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(scales[index].lastPos, scales[index].pos, timeStacker)) + num;
-            sLeaser.sprites[i].color = /*sLeaser.sprites[1].color*/ UnityEngine.Color.red;
-
-            index++;
+            sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(scales[index].lastPos, scales[index].pos, timeStacker)) + rotationAngle;
         }
     }
     public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser)

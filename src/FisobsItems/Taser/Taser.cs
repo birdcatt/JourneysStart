@@ -30,9 +30,7 @@ public class Taser : Rock
         destroyCounter = 0;
     }
 
-    #pragma warning disable IDE1006 // Naming Styles
-    public TaserAbstract abstractTaser
-    #pragma warning restore IDE1006 // Naming Styles
+    public TaserAbstract AbstractTaser
     {
         get
         {
@@ -62,7 +60,7 @@ public class Taser : Rock
             if (fluxTimers[i] > 6.2831855f)
                 ResetFluxSpeed(i);
         }
-        if (Random.value < (0.025f * (0.33f * abstractTaser.electricCharge)))
+        if (Random.value < (0.025f * (0.33f * AbstractTaser.electricCharge)))
             Spark();
     }
 
@@ -87,7 +85,7 @@ public class Taser : Rock
 
             if (critIsElec)
             {
-                if (abstractTaser.electricCharge <= 0)
+                if (AbstractTaser.electricCharge <= 0)
                 {
                     Recharge();
                     recharged = true;
@@ -95,7 +93,7 @@ public class Taser : Rock
                 //now its rock
                 HitSomethingRock(result, crit);
             }
-            else if (abstractTaser.electricCharge > 0)
+            else if (AbstractTaser.electricCharge > 0)
             {
                 if (crit is not BigEel)
                 {
@@ -109,13 +107,13 @@ public class Taser : Rock
                 }
                 room.PlaySound(SoundID.Zapper_Zap, firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
                 room.AddObject(new Explosion.ExplosionLight(firstChunk.pos, 200f, 1f, 4, new Colour(0.7f, 1f, 1f)));
-                if (--abstractTaser.electricCharge == 0)
+                if (--AbstractTaser.electricCharge == 0)
                     ShortCircuit();
             }
             else //electric charge is 0
                 HitSomethingRock(result, crit);
 
-            if (!recharged && critIsElec && Random.value < (critIsElec ? 0.4f : ((abstractTaser.electricCharge == 1) ? 0.2f : 0f)) || isUnderwater)
+            if (!recharged && critIsElec && Random.value < (critIsElec ? 0.4f : ((AbstractTaser.electricCharge == 1) ? 0.2f : 0f)) || isUnderwater)
             {
                 if (critIsElec)
                     ExplosiveShortCircuit();
@@ -179,8 +177,8 @@ public class Taser : Rock
                 fSprite = new FSprite("Pebble" + Random.Range(1, 12).ToString(), true);
 
             sLeaser.sprites[i] = fSprite;
-            sLeaser.sprites[i].scaleX = abstractTaser.scaleX;
-            sLeaser.sprites[i].scaleY = abstractTaser.scaleY;
+            sLeaser.sprites[i].scaleX = AbstractTaser.scaleX;
+            sLeaser.sprites[i].scaleY = AbstractTaser.scaleY;
         }
         AddToContainer(sLeaser, rCam, null);
     }
@@ -202,8 +200,8 @@ public class Taser : Rock
             sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(Vector2.zero, Vector3.Slerp(lastRotation, rotation, timeStacker));
 
             sLeaser.sprites[i].color = Colour.Lerp(electricColour, Colour.white, Mathf.Abs(Mathf.Sin(fluxTimers[i]))); //the fluxTimer is why it's a for and not foreach
-            if (abstractTaser.electricCharge < 3)
-                SetChargeDependantElectricColour(sLeaser, rCam, i, abstractTaser.electricCharge);
+            if (AbstractTaser.electricCharge < 3)
+                SetChargeDependantElectricColour(sLeaser, rCam, i, AbstractTaser.electricCharge);
         }
 
         if (slatedForDeletetion || room != rCam.room)
@@ -230,7 +228,7 @@ public class Taser : Rock
     }
     public void ShortCircuit()
     {
-        if (abstractTaser.electricCharge == 0)
+        if (AbstractTaser.electricCharge == 0)
             return;
 
         Vector2 pos = firstChunk.pos;
@@ -247,11 +245,11 @@ public class Taser : Rock
         room.PlaySound(SoundID.Firecracker_Bang, pos);
         room.InGameNoise(new Noise.InGameNoise(pos, 800f, this, 1f));
         vibrate = Math.Max(vibrate, 6);
-        abstractTaser.electricCharge = 0;
+        AbstractTaser.electricCharge = 0;
     }
     public void Recharge()
     {
-        abstractTaser.electricCharge = 3;
+        AbstractTaser.electricCharge = 3;
         room.PlaySound(SoundID.Jelly_Fish_Tentacle_Stun, firstChunk.pos);
         room.AddObject(new Explosion.ExplosionLight(firstChunk.pos, 200f, 1f, 4, new Colour(0.7f, 1f, 1f)));
         Spark();
@@ -274,7 +272,7 @@ public class Taser : Rock
     }
     public void Zap()
     {
-        if (abstractTaser.electricCharge == 0)
+        if (AbstractTaser.electricCharge == 0)
             return;
         room.AddObject(new ZapCoil.ZapFlash(firstChunk.pos, 10f));
         room.PlaySound(SoundID.Zapper_Zap, firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);

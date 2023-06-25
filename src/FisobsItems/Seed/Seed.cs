@@ -4,9 +4,9 @@
 
 namespace JourneysStart.FisobsItems.Seed;
 
-public class SproutSeed : PlayerCarryableItem, IDrawable, IPlayerEdible
+public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
 {
-    public SproutSeed(SeedAbstract abstr) : base(abstr)
+    public Seed(SeedAbstract abstr) : base(abstr)
     {
         bodyChunks = new BodyChunk[1];
         bodyChunks[0] = new BodyChunk(this, 0, new Vector2(0f, 0f), 5f, 0.12f);
