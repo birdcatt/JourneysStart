@@ -25,12 +25,12 @@ namespace JourneysStart.Shared
         #region moon panic
         public static void OraclePanicDisplay_Update(On.MoreSlugcats.OraclePanicDisplay.orig_Update orig, MoreSlugcats.OraclePanicDisplay self, bool eu)
         {
-            if (!SlugIsLightpup(self.oracle.room.game.StoryCharacter))
+            if (!IsLightpup(self.oracle.room.game.StoryCharacter))
                 orig(self, eu);
         }
         public static void SSOracleBehavior_SpecialEvent(On.SSOracleBehavior.orig_SpecialEvent orig, SSOracleBehavior self, string eventName)
         {
-            if (SlugIsLightpup(self.oracle.room.game.StoryCharacter) && "panic" == eventName)
+            if (IsLightpup(self.oracle.room.game.StoryCharacter) && "panic" == eventName)
             {
                 Debug.Log($"{Plugin.MOD_NAME}: Prevented special event {eventName}");
                 eventName = "NOO MOON DON'T PANIC (brought to you by " + Plugin.MOD_NAME + ")";

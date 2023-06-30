@@ -14,6 +14,7 @@ namespace JourneysStart.Lightbringer
         {
             FRDData.Hook();
             Crafting.Hook();
+            ElecResist.Hook();
             PearlDialogue.Hook();
             GeneralHooks();
         }
@@ -37,7 +38,7 @@ namespace JourneysStart.Lightbringer
         public static void WorldLoader_GeneratePopulation(On.WorldLoader.orig_GeneratePopulation orig, WorldLoader self, bool fresh)
         {
             //disable rot spawns even on modded regions except for iterator regions
-            if (Utility.SlugIsLightpup(self.game.StoryCharacter) && !self.abstractRooms.Any(abstrRoom => abstrRoom.name == "AI"))
+            if (Utility.IsLightpup(self.game.StoryCharacter) && !self.abstractRooms.Any(abstrRoom => abstrRoom.name == "AI"))
                 self.spawners.RemoveAll(spawn => spawn is World.SimpleSpawner spawner && Utility.CreatureIsRot(StaticWorld.GetCreatureTemplate(spawner.creatureType).type));
             orig(self, fresh);
         }

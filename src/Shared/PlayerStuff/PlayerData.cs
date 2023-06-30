@@ -29,15 +29,20 @@ sealed class PlayerData
         SlugcatStats.Name name = player.slugcatStats.name;
         if (Plugin.lghtbrpup == name)
         {
+            IsModcat = true;
             IsLightpup = true;
             Lightpup = new(this);
         }
         else if (Plugin.sproutcat == name)
         {
+            IsModcat = true;
             IsSproutcat = true;
             Sproutcat = new(this);
         }
-        IsModcat = IsLightpup || IsSproutcat;
+        else
+        {
+            Debug.Log($"{Plugin.MOD_NAME}: How did {player.SlugCatClass} player {player.playerState.playerNumber} get in the PlayerDataCWT?!");
+        }
 
         tailPattern = new(player);
 

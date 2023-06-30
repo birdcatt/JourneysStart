@@ -20,7 +20,7 @@ public class HooksTaser
     public static void Lantern_HitByWeapon(On.Lantern.orig_HitByWeapon orig, Lantern self, Weapon weapon)
     {
         orig(self, weapon);
-        if (self.room?.game.session is StoryGameSession story && SlugIsMod(story.game.StoryCharacter))
+        if (IsModcat(self.room?.game.StoryCharacter))
         {
             Random.InitState(Time.time.GetHashCode());
             if (weapon is ExplosiveSpear || weapon is ScavengerBomb || Random.value < 0.2f)
@@ -58,7 +58,7 @@ public class HooksTaser
     public static void ElectricSpear_DrawSprites(On.MoreSlugcats.ElectricSpear.orig_DrawSprites orig, MoreSlugcats.ElectricSpear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (self.room?.game.session is StoryGameSession story && SlugIsMod(story.game.StoryCharacter))
+        if (IsModcat(self.room?.game.StoryCharacter))
         {
             //remember to null check rooms
             int electricCharge = self.abstractSpear.electricCharge;

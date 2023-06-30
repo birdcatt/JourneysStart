@@ -50,10 +50,13 @@ public class RoomScripts
                 player.playerState.foodInStomach = food.x - food.y;
             }
 
-            //only 1 bot
-            AncientBot bot = new(new Vector2(2695, 480), new Color(1f, 0f, 0f), RealizedPlayer, true);
-            RealizedPlayer.myRobot = bot;
-            room.AddObject(bot);
+            if (Plugin.Sprout_Debug_NoAncientBot.TryGet(RealizedPlayer, out bool dontSpawnBot) && dontSpawnBot)
+            {
+                //only 1 bot
+                AncientBot bot = new(new Vector2(2695, 480), new Color(1f, 0f, 0f), RealizedPlayer, true);
+                RealizedPlayer.myRobot = bot;
+                room.AddObject(bot);
+            }
 
             Destroy();
         }

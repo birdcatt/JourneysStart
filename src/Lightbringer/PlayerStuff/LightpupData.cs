@@ -28,6 +28,8 @@ sealed class LightpupData
 
     public int stripeIndex;
 
+    public bool HitByZapcoil = false;
+
     public LightpupData(PlayerData playerData)
     {
         this.playerData = playerData;
@@ -75,18 +77,11 @@ sealed class LightpupData
         if (!Input.GetKey(flareInput)) //check other inputs too, so cant do this while eating or sleeping
             return;
 
-        flareCharge--;
-        Debug.Log($"{Plugin.MOD_NAME}: Flare charge used up ({flareCharge}/{flareChargeMax}) left)");
-
-        playerData.playerRef.TryGetTarget(out Player player);
-
-        //stripe colour darkens
-        Colour newColour = Colour.Lerp(playerData.tailPattern.PatternColour, player.room.game.cameras[0].currentPalette.blackColor, 0.5f);
-        playerData.tailPattern.OldPatternColour = newColour; //for hypothermia and all
-        playerData.tailPattern.RecolourTail(playerData.tailPattern.BodyColour, newColour);
+        RemoveFlareCharge();
 
         flareCooldown = ConfigMenu.flareCooldown.Value * 40; //update runs 40 times a second
 
+        playerData.playerRef.TryGetTarget(out Player player);
         Room room = player.room;
         AbstractConsumable flareBomb = new(room.world, AbstractObjectType.FlareBomb, null, room.GetWorldCoordinate(player.bodyChunks[1].pos), room.game.GetNewID(), -1, -1, null);
         Flare flare = new(player, flareBomb);
@@ -130,7 +125,7 @@ sealed class LightpupData
             idlePoint.y += Random.Range(vec[2], vec[3]);
 
             //look at it
-            (player.graphicsModule as PlayerGraphics).LookAtPoint(idlePoint, 1);
+            (player.graphicsModule as PlayerGraphics).LookAtPoint(idlePoint, 0.2f);
         }
     }
 
@@ -151,7 +146,21 @@ sealed class LightpupData
         else if (Player.BodyModeIndex.Default != player.bodyMode || player.exhausted)
             controller.likesFood = 0;
 
-        player.controller = null;
+        if (null != player.controller)
+            player.controller = null;
+    }
+
+    public void RemoveFlareCharge()
+    {
+        flareCharge--;
+        Debug.Log($"{Plugin.MOD_NAME}: Flare charge used up ({flareCharge}/{flareChargeMax}) left)");
+
+        playerData.playerRef.TryGetTarget(out Player player);
+
+        //stripe colour darkens
+        Colour newColour = Colour.Lerp(playerData.tailPattern.PatternColour, player.room.game.cameras[0].currentPalette.blackColor, 0.5f);
+        playerData.tailPattern.OldPatternColour = newColour; //for hypothermia and all
+        playerData.tailPattern.RecolourTail(playerData.tailPattern.BodyColour, newColour);
     }
 
     #region nested classes

@@ -27,7 +27,7 @@ namespace JourneysStart.Shared.PlayerStuff
         {
             name = player.slugcatStats.name;
 
-            if (!Utility.SlugIsMod(name))
+            if (!Utility.IsModcat(name))
             {
                 Debug.Log($"{Plugin.MOD_NAME}: Player {player.slugcatStats.name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
                 return;
@@ -162,7 +162,7 @@ namespace JourneysStart.Shared.PlayerStuff
             {
                 if (sLeaser.drawableObject is PlayerGraphics pGraph && pGraph.player == player)
                 {
-                    PlayerGrafHooks.UVMapTail(player, sLeaser);
+                    PlayerGrafMethods.UVMapTail(player, sLeaser);
                     break;
                 }
             }

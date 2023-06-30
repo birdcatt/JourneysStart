@@ -3,6 +3,7 @@ using Vector2 = UnityEngine.Vector2;
 using Mathf = UnityEngine.Mathf;
 using MoreSlugcats;
 using JourneysStart.Shared.PlayerStuff;
+using JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
 
 namespace JourneysStart.Outgrowth.PlayerStuff;
 
@@ -15,10 +16,13 @@ sealed class OutgrowthData
 
     public int[] spriteIndexes;
     //0 - body scar
-    //1 - mushroom necklace
-    //2 - face scar?
-    //check fluff isnt in here
+    //1 - rope
+    //2 - rope 2
+    //3 - mushroom necklace
+    //4 - face scar
+    //check fluff isnt in here, it stores its own index
     public const int BodyScarIndex = 0;
+    public const int RopeIndex = 1;
 
     public CheekFluff cheekFluff;
 
@@ -38,25 +42,53 @@ sealed class OutgrowthData
 
     public void Update()
     {
-        //if (!MMF.cfgOldTongue.Value
-        //    && player.input[0].jmp && !player.input[1].jmp && !player.input[0].pckp && player.canJump <= 0
-        //    && player.bodyMode != Player.BodyModeIndex.Crawl
-        //    && player.animation != Player.AnimationIndex.ClimbOnBeam && player.animation != Player.AnimationIndex.AntlerClimb
-        //    && player.animation != Player.AnimationIndex.HangFromBeam && player.SaintTongueCheck())
-        //{
-        //    Vector2 vector = new(player.flipDirection, 0.7f);
-        //    Vector2 normalized = vector.normalized;
-        //    if (player.input[0].y > 0)
-        //    {
-        //        normalized = new Vector2(0f, 1f);
-        //    }
-        //    normalized = (normalized + player.mainBodyChunk.vel.normalized * 0.2f).normalized;
-        //    player.tongue.Shoot(normalized);
-        //}
+        if (!playerData.playerRef.TryGetTarget(out Player player))
+            return;
+
+        //from ClassMechanicsSaint
+        if (CanShootTongue())
+        {
+            Vector2 vector = new(player.flipDirection, 0.7f);
+            Vector2 normalized = vector.normalized;
+            if (player.input[0].y > 0)
+            {
+                normalized = new Vector2(0f, 1f);
+            }
+            normalized = (normalized + player.mainBodyChunk.vel.normalized * 0.2f).normalized;
+            player.tongue.Shoot(normalized);
+        }
     }
 
     public bool CannotEatBugsThisCycle(IPlayerEdible eatenobject)
     {
-        return playerData.IsSproutcat && AteABugThisCycle && Utility.EdibleIsBug(eatenobject);
+        return AteABugThisCycle && Utility.EdibleIsBug(eatenobject);
+    }
+    public bool CanShootTongue()
+    {
+        if (!playerData.playerRef.TryGetTarget(out Player player))
+            return false;
+
+        if (!(player.input[0].jmp && !player.input[1].jmp && !player.input[0].pckp && player.canJump <= 0))
+            return false;
+
+        if (player.bodyMode == Player.BodyModeIndex.Crawl
+            || player.bodyMode == Player.BodyModeIndex.CorridorClimb
+            || player.bodyMode == Player.BodyModeIndex.ClimbIntoShortCut
+            || player.bodyMode == Player.BodyModeIndex.WallClimb
+            || player.bodyMode == Player.BodyModeIndex.Swimming)
+            return false;
+
+        if (player.animation == Player.AnimationIndex.ClimbOnBeam
+            || player.animation == Player.AnimationIndex.AntlerClimb
+            || player.animation == Player.AnimationIndex.HangFromBeam
+            || player.animation == Player.AnimationIndex.VineGrab
+            || player.animation == Player.AnimationIndex.ZeroGPoleGrab)
+            return false;
+
+        if (player.tongue.mode != Player.Tongue.Mode.Retracted)
+            return false;
+
+        //if (cfgOldTongue), code elsewhere should take care of it
+        return !MMF.cfgOldTongue.Value && player.Consious && !player.corridorDrop;
     }
 }

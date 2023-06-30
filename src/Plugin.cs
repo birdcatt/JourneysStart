@@ -49,6 +49,8 @@ namespace JourneysStart
 
         #region outgrowth variables
         public static readonly GameFeature<bool> Sprout_Debug_UnlockProgression = GameBool("sproutcat/debug/unlock_progression");
+        public static readonly PlayerFeature<bool> Sprout_Debug_CheekFluffColours = PlayerBool("sproutcat/debug/cheek_fluff_colours");
+        public static readonly PlayerFeature<bool> Sprout_Debug_NoAncientBot = PlayerBool("sproutcat/debug/no_ancient_bot");
         #endregion
 
         private static bool isPostInit;
@@ -76,8 +78,8 @@ namespace JourneysStart
             if (!Futile.atlasManager.DoesContainAtlas("journeysstart_assets"))
                 Futile.atlasManager.LoadAtlas("atlases/journeysstart_assets");
 
-            PlayerGrafHooks.TailTextureFilePath(ref PlayerGrafHooks.LightpupTailTexture, "lightpup_tailstripes");
-            PlayerGrafHooks.TailTextureFilePath(ref PlayerGrafHooks.SproutcatTailTexture, "sproutcat_tailtexture");
+            PlayerGrafMethods.TailTextureFilePath(ref PlayerGrafHooks.LightpupTailTexture, "lightpup_tailstripes");
+            PlayerGrafMethods.TailTextureFilePath(ref PlayerGrafHooks.SproutcatTailTexture, "sproutcat_tailtexture");
             On.Player.ctor += Player_ctor;
             PlayerGrafHooks.Hook();
 
@@ -143,7 +145,7 @@ namespace JourneysStart
             orig(self, abstractCreature, world);
 
             SlugcatStats.Name name = self.slugcatStats.name;
-            if (Utility.SlugIsMod(name))
+            if (Utility.IsModcat(name))
             {
                 if (!PlayerDataCWT.TryGetValue(self, out _))
                     PlayerDataCWT.Add(self, new PlayerData(self));

@@ -56,7 +56,7 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static Colour PlayerGraphics_JollyFaceColorMenu(On.PlayerGraphics.orig_JollyFaceColorMenu orig, SlugcatStats.Name slugName, SlugcatStats.Name reference, int playerNumber)
         {
             Colour val = orig(slugName, reference, playerNumber);
-            if (Utility.SlugIsMod(slugName))
+            if (Utility.IsModcat(slugName))
             {
                 if (SlugBaseCharacter.TryGet(slugName, out SlugBaseCharacter charac)
                 && charac.Features.TryGet(PlayerFeatures.CustomColors, out ColorSlot[] customColours))
@@ -70,7 +70,7 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static Colour PlayerGraphics_JollyUniqueColorMenu(On.PlayerGraphics.orig_JollyUniqueColorMenu orig, SlugcatStats.Name slugName, SlugcatStats.Name reference, int playerNumber)
         {
             Colour val = orig(slugName, reference, playerNumber);
-            if (Utility.SlugIsMod(slugName))
+            if (Utility.IsModcat(slugName))
             {
                 if (SlugBaseCharacter.TryGet(slugName, out SlugBaseCharacter charac)
                 && charac.Features.TryGet(PlayerFeatures.CustomColors, out ColorSlot[] customColours)
@@ -92,9 +92,9 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static string JollyPlayerSelector_GetPupButtonOffName(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GetPupButtonOffName orig, JollyPlayerSelector self)
         {
             string val = orig(self);
-            if (Utility.SlugIsLightpup(self.JollyOptions(self.index).playerClass))
+            if (Utility.IsLightpup(self.JollyOptions(self.index).playerClass))
                 return Plugin.lghtbrpup + "_pup_off";
-            if (Utility.SlugIsSprout(self.JollyOptions(self.index).playerClass))
+            if (Utility.IsSproutcat(self.JollyOptions(self.index).playerClass))
                 return Plugin.sproutcat + "_pup_off";
             return val;
         }
@@ -156,7 +156,6 @@ namespace JourneysStart.Shared.ArtOnScreen
                     self.RemoveUniqueSymbol();
                 }
             }
-
             orig(self);
         }
         public static void RemoveUniqueSymbol(this SymbolButtonTogglePupButton self)
@@ -182,7 +181,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             if (ExtraPortraits.TryGetValue(self, out JollyMenuPortraits p))
             {
                 SlugcatStats.Name currentSlug = JollyCustom.SlugClassMenu(self.index, self.dialog.currentSlugcatPageName);
-                if (Utility.SlugIsMod(currentSlug) && (JollyColorMode.CUSTOM == self.dialog.Options.jollyColorMode || JollyColorMode.AUTO == self.dialog.Options.jollyColorMode && self.index != 0))
+                if (Utility.IsModcat(currentSlug) && (JollyColorMode.CUSTOM == self.dialog.Options.jollyColorMode || JollyColorMode.AUTO == self.dialog.Options.jollyColorMode && self.index != 0))
                 {
                     self.portrait.sprite.isVisible = false;
                     p.EnableAllPortraits(currentSlug, new SlugcatStats.Name("JollyPlayer" + (self.index + 1).ToString(), false), self.JollyOptions(0).playerClass, self.index);
@@ -258,6 +257,9 @@ namespace JourneysStart.Shared.ArtOnScreen
         }
         public void DisableAllPortraits()
         {
+            if (!PortraitsEnabled)
+                return;
+
             PortraitsEnabled = false;
 
             Body.sprite.isVisible = false;

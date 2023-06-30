@@ -2,7 +2,7 @@
 using System.Reflection;
 using Colour = UnityEngine.Color;
 using static JourneysStart.Utility;
-using System.Linq;
+//using System.Linq;
 using Debug = UnityEngine.Debug;
 using Custom = RWCustom.Custom;
 using DataPearlType = DataPearl.AbstractDataPearl.DataPearlType;
@@ -42,11 +42,17 @@ public class FRDData
     }
     public static Colour DataPearl_UniquePearlMainColor(On.DataPearl.orig_UniquePearlMainColor orig, DataPearlType pearlType)
     {
-        return LightpupPearl == pearlType ? FRDColour : orig(pearlType);
+        Colour val = orig(pearlType);
+        if (LightpupPearl == pearlType)
+            return FRDColour;
+        return val;
     }
     public static Colour? DataPearl_UniquePearlHighLightColor(On.DataPearl.orig_UniquePearlHighLightColor orig, DataPearlType pearlType)
     {
-        return LightpupPearl == pearlType ? FRDPearlHighlightColour : orig(pearlType);
+        Colour? val = orig(pearlType);
+        if (LightpupPearl == pearlType)
+            return FRDPearlHighlightColour;
+        return val;
     }
     #endregion
 

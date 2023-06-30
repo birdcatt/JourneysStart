@@ -326,7 +326,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                 AddCraftingLight(self, 80f);
                 AddCraftingSpark(self);
 
-                if (graspIsFullElecSpear || !graspIsFullElecSpear && !graspIsSpear && graspIsFullTaser)
+                if (graspIsFullElecSpear || /*!graspIsFullElecSpear &&*/ !graspIsSpear && graspIsFullTaser)
                 {
                     //no need to check for 2 tasers, they explode/short circuit if crafted
                     Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Electric grasp is already full charge");

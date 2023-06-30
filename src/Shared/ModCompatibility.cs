@@ -23,12 +23,10 @@ public class ModCompatibility
             if (!(Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData) && pData.IsModcat))
                 return;
 
-            SlugcatStats.Name name = self.player.slugcatStats.name;
-
             Customization customization = Customization.For(self.player.slugcatStats.name.value, self.player.playerState.playerNumber);
             CustomSprite customSprite;
 
-            if (Plugin.lghtbrpup == name)
+            if (Plugin.lghtbrpup == self.player.slugcatStats.name)
             {
                 customSprite = customization.CustomSprite("BODY");
                 CheckBodySprite(self, sLeaser, rCam, pData.Lightpup.stripeIndex, customSprite);
