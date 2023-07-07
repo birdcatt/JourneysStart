@@ -5,6 +5,8 @@ using Action = SSOracleBehavior.Action;
 using static JourneysStart.Utility;
 using static JourneysStart.Lightbringer.Data.FRDData;
 using static MoreSlugcats.MoreSlugcatsEnums;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
 
 namespace JourneysStart.Shared
 {
@@ -12,7 +14,7 @@ namespace JourneysStart.Shared
     {
         public static void Hook()
         {
-            On.MoreSlugcats.OraclePanicDisplay.Update += OraclePanicDisplay_Update;
+            IL.MoreSlugcats.OraclePanicDisplay.Update += OraclePanicDisplay_Update;
             On.SSOracleBehavior.SpecialEvent += SSOracleBehavior_SpecialEvent;
 
             On.SSOracleBehavior.SSSleepoverBehavior.ctor += SSSleepoverBehavior_ctor;
@@ -23,10 +25,22 @@ namespace JourneysStart.Shared
         }
 
         #region moon panic
-        public static void OraclePanicDisplay_Update(On.MoreSlugcats.OraclePanicDisplay.orig_Update orig, MoreSlugcats.OraclePanicDisplay self, bool eu)
+        public static void OraclePanicDisplay_Update(ILContext il)
         {
-            if (!IsLightpup(self.oracle.room.game.StoryCharacter))
-                orig(self, eu);
+            //another day another dont call orig
+            //theres no new code, its just skip orig
+            ILCursor c = new(il);
+            ILLabel label = il.DefineLabel();
+
+            c.Emit(OpCodes.Ldarg_0); //put argument 0 on the stack
+            c.EmitDelegate((MoreSlugcats.OraclePanicDisplay self) =>
+            {
+                //pop argument 0 off the stack
+                return IsLightpup(self.oracle.room.game.StoryCharacter); //push a bool onto the stack
+            });
+            c.Emit(OpCodes.Brfalse_S, label); //if bool is false, go to orig
+            c.Emit(OpCodes.Ret); //return
+            c.MarkLabel(label);
         }
         public static void SSOracleBehavior_SpecialEvent(On.SSOracleBehavior.orig_SpecialEvent orig, SSOracleBehavior self, string eventName)
         {
@@ -55,7 +69,7 @@ namespace JourneysStart.Shared
         #region update methods
         public static void SSOracleBehavior_Update(On.SSOracleBehavior.orig_Update orig, SSOracleBehavior self, bool eu)
         {
-            if (Plugin.lghtbrpup == self.oracle.room.game.StoryCharacter)
+            if (IsLightpup(self.oracle.room.game.StoryCharacter))
             {
                 if (Action.General_GiveMark == self.action)
                 {
@@ -76,7 +90,7 @@ namespace JourneysStart.Shared
         {
             orig(self);
 
-            if (Plugin.lghtbrpup == self.owner.oracle.room.game.StoryCharacter)
+            if (IsLightpup(self.oracle.room.game.StoryCharacter))
             {
                 self.owner.getToWorking = 1f;
                 self.owner.UnlockShortcuts();
@@ -101,7 +115,7 @@ namespace JourneysStart.Shared
 
             string regionName = self.owner.oracle.room.world.region.name;
 
-            if (!(Plugin.lghtbrpup == self.owner.oracle.room.game.StoryCharacter && (IsPebblesConvo() || IsMoonConvo())))
+            if (!(IsLightpup(self.owner.oracle.room.game.StoryCharacter) && (IsPebblesConvo() || IsMoonConvo())))
             {
                 //region checking so this guy plays nice with custom iterators
                 orig(self);

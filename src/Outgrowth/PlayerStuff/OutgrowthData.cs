@@ -20,9 +20,9 @@ sealed class OutgrowthData
     //2 - rope 2
     //3 - mushroom necklace
     //4 - face scar
-    //check fluff isnt in here, it stores its own index
-    public const int BodyScarIndex = 0;
-    public const int RopeIndex = 1;
+    //check fluff isnt in here, it stores its own indices
+    public const int BODY_SCAR_INDEX = 0;
+    public const int ROPE_INDEX = 1;
 
     public CheekFluff cheekFluff;
 

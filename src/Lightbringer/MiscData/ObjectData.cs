@@ -1,22 +1,27 @@
 ﻿using MoreSlugcats;
-using UnityEngine;
-using Colour = UnityEngine.Color;
+using System;
+using Random = UnityEngine.Random;
+using Vector2 = UnityEngine.Vector2;
+using Mathf = UnityEngine.Mathf;
 using Custom = RWCustom.Custom;
 
 namespace JourneysStart.Lightbringer.Data
 {
     public class Flare : FlareBomb
     {
-        public readonly Player player;
+        public WeakReference<Player> playerRef;
         public Flare(Player player, AbstractPhysicalObject abstractPhysicalObject) : base(abstractPhysicalObject, player.room.world)
         {
-            this.player = player;
+            playerRef = new WeakReference<Player>(player);
             thrownBy = player; //sets kill tag
         }
         public override void Update(bool eu)
         {
-            if (null == player)
+            if (!playerRef.TryGetTarget(out Player player))
+            {
                 Destroy();
+                return;
+            }
 
             base.Update(eu);
             firstChunk.pos = player.bodyChunks[1].pos;

@@ -21,21 +21,27 @@ namespace JourneysStart
     public static class Utility
     {
         #region slug checks
-        public static bool IsModcat(SlugcatStats.Name slug)
+        public static bool IsModcat(SlugcatStats.Name slugName)
         {
-            return null != slug && (sproutcat == slug || lghtbrpup == slug);
+            return null != slugName && (sproutcat == slugName || lghtbrpup == slugName);
         }
-        public static bool IsLightpup(SlugcatStats.Name StoryCharacter) //meant to check StoryCharacter for non-story game sessions
+
+        public static bool IsLightpup(SlugcatStats.Name slugName)
         {
-            return null != StoryCharacter && lghtbrpup == StoryCharacter;
+            return null != slugName && lghtbrpup == slugName;
         }
-        public static bool IsSproutcat(SlugcatStats.Name slug)
+
+        public static bool IsSproutcat(SlugcatStats.Name slugName)
         {
-            return null != slug && sproutcat == slug;
+            return null != slugName && sproutcat == slugName;
         }
         public static bool IsSproutcat(Creature crit)
         {
-            return null != crit && crit is Player player && IsSproutcat(player.slugcatStats.name);
+            return crit is Player player && IsSproutcat(player);
+        }
+        public static bool IsSproutcat(Player player)
+        {
+            return null != player && IsSproutcat(player.slugcatStats.name);
         }
         #endregion
 

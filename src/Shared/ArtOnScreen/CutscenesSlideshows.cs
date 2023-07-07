@@ -13,6 +13,7 @@ namespace JourneysStart.Shared.ArtOnScreen
     public class CutscenesSlideshows
     {
         public static SlideShowID LightpupIntroSlideShow = new("LightpupIntroSlideShow", true);
+        public static SlideShowID LightpupOutroVoidSeaSlideShow = new("LightpupIntroSlideShow", true);
 
         public static SceneID LightpupIntroSceneA = new("LightpupIntroSceneA", true);
         //public static SceneID LightpupIntroSceneB;
@@ -21,10 +22,19 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static void Hook()
         {
             IL.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
+
+            IL.RainWorldGame.ExitToVoidSeaSlideShow += RainWorldGame_ExitToVoidSeaSlideShow;
+
+            //alt ends are done in room specific scripts, do:
+            // ...manager.nextSlideshow = alt end slideshow id
+            // ...manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
+            //then destroy the script
+
             IL.Menu.SlideShow.ctor += SlideShow_ctor;
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
         }
 
+        #region intro
         public static void SlugcatSelectMenu_StartGame(ILContext il)
         {
             ILCursor c = new(il);
@@ -53,6 +63,28 @@ namespace JourneysStart.Shared.ArtOnScreen
                 }
             });
         }
+        #endregion
+
+        #region void sea
+        public static void RainWorldGame_ExitToVoidSeaSlideShow(ILContext il)
+        {
+            ILCursor c = new(il);
+            
+            c.GotoNext(MoveType.Before, i => i.MatchCallOrCallvirt<ProcessManager>("RequestMainProcessSwitch"));
+            c.GotoPrev(MoveType.Before, i => i.MatchLdarg(0));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((RainWorldGame self) =>
+            {
+                if (Plugin.lghtbrpup == self.StoryCharacter)
+                {
+                    self.manager.nextSlideshow = LightpupOutroVoidSeaSlideShow;
+                }
+            });
+        }
+        #endregion
+
+        #region build slideshows and scenes
         public static void SlideShow_ctor(ILContext il)
         {
             ILCursor c = new(il);
@@ -92,6 +124,32 @@ namespace JourneysStart.Shared.ArtOnScreen
                     }
                     self.processAfterSlideShow = ProcessManager.ProcessID.Game;
                 }
+                else if (LightpupOutroVoidSeaSlideShow == slideShowID)
+                {
+                    if (manager.musicPlayer != null)
+                    {
+                        self.waitForMusic = "RW_Outro_Theme";
+                        self.stall = true;
+                        manager.musicPlayer.MenuRequestsSong(self.waitForMusic, 1.5f, 10f);
+                    }
+
+                    Scene[] scenes =
+                    {
+                        new Scene(SceneID.Empty, 0f, 0f, 0f),
+                        new Scene(LightpupIntroSceneA, self.ConvertTime(0, 0, 20), self.ConvertTime(0, 3, 26), self.ConvertTime(0, 8, 6))
+                    };
+                    foreach (Scene scene in scenes)
+                    {
+                        scene.startAt -= 1.1f;
+                        scene.fadeInDoneAt -= 1.1f;
+                        scene.fadeOutStartAt -= 1.1f;
+                        self.playList.Add(scene);
+                    }
+
+                    self.processAfterSlideShow = ProcessManager.ProcessID.Credits;
+                    if (ModManager.MSC)
+                        manager.statsAfterCredits = true;
+                }
             });
         }
         public static void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
@@ -100,16 +158,26 @@ namespace JourneysStart.Shared.ArtOnScreen
 
             if (LightpupIntroSceneA == self.sceneID)
             {
-                self.sceneFolder = GetLightpupScenesFilePath("intro_a");
+                self.sceneFolder = GetLScenesFilePath_Lightpup("intro_a");
 
                 //if (self.flatMode)
                 self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "flat", new Vector2(683f, 384f), false, true));
+                //non-flatmode adds MenuDepthIllustration instead
             }
         }
+        #endregion
 
-        public static string GetLightpupScenesFilePath(string fileName)
+        public static string GetLScenesFilePath_Lightpup(string fileName)
         {
             return GetScenesFilePath("lightpup" + Path.DirectorySeparatorChar.ToString() + fileName);
+        }
+        public static string GetScenesFilePath_Sproutcat(string fileName)
+        {
+            return GetScenesFilePath("sproutcat" + Path.DirectorySeparatorChar.ToString() + fileName);
+        }
+        public static string GetScenesFilePath_Strawberry(string fileName)
+        {
+            return GetScenesFilePath("strawberry" + Path.DirectorySeparatorChar.ToString() + fileName);
         }
         public static string GetScenesFilePath(string fileName)
         {

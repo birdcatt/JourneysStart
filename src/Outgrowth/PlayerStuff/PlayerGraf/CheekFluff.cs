@@ -42,14 +42,13 @@ public class CheekFluff
         if (!playerRef.TryGetTarget(out Player player))
             return;
 
-        Vector2 pos2 = player.bodyChunks[1].pos;
-        float num4 = 200f / (scales.Length / 2);
-
         for (int i = startIndex; i < endIndex; i++)
         {
             int index = i - startIndex;
             Vector2 pos = player.bodyChunks[0].pos;
+            Vector2 pos2 = player.bodyChunks[1].pos;
             int num3 = index % (scales.Length / 2);
+            float num4 = 200f / (scales.Length / 2);
 
             if (i % 2 != 0)
             {
@@ -91,11 +90,11 @@ public class CheekFluff
 
     public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser)
     {
-        Debug.Log($"{Plugin.MOD_NAME}: Initiating cheek fluff sprites");
+        //Debug.Log($"{Plugin.MOD_NAME}: Initiating cheek fluff sprites");
         float whiskerScaleY = 10f / Futile.atlasManager.GetElementWithName(spriteName).sourcePixelSize.y;
         for (int i = startIndex; i < endIndex; i++)
         {
-            Debug.Log($"\tCreating new sprite at index {i}");
+            //Debug.Log($"\tCreating new sprite at index {i}");
             sLeaser.sprites[i] = new(spriteName)
             {
                 scaleX = 1f,
@@ -109,6 +108,7 @@ public class CheekFluff
         for (int i = startIndex; i < endIndex; i++)
         {
             container.AddChild(sLeaser.sprites[i]);
+            sLeaser.sprites[i].MoveToBack();
             sLeaser.sprites[i].MoveBehindOtherNode(sLeaser.sprites[9]); //move behind face
         }
     }
@@ -123,7 +123,7 @@ public class CheekFluff
             vector.y += 1.5f;
 
             float xIncr = 2f;
-            float rotationAngle = 160f;
+            float rotationAngle = 160f; //higher = goes up
 
             if (i >= lowerFluffIndex)
             {

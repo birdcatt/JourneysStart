@@ -26,7 +26,7 @@ public class SharedGeneral
 
         On.WorldLoader.OverseerSpawnConditions += WorldLoader_OverseerSpawnConditions;
 
-        On.Player.ObjectEaten += Player_ObjectEaten; //food reaction + seed
+        On.Player.ObjectEaten += Player_ObjectEaten; //food reaction + eating a bug
     }
 
     public static float SpearSpawnElectricChance(On.SlugcatStats.orig_SpearSpawnElectricRandomChance orig, SlugcatStats.Name index)

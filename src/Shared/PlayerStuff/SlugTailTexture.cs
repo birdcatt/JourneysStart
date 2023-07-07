@@ -6,12 +6,12 @@ using UnityEngine;
 using Colour = UnityEngine.Color;
 using Custom = RWCustom.Custom;
 
-//fr just beecat in here
+//beecat started off most of this code o7 thanks
+//this code is quite ugly but also it works
 namespace JourneysStart.Shared.PlayerStuff
 {
     public class SlugTailTexture
     {
-        public SlugcatStats.Name name;
         public Colour BodyColour;
         public Colour PatternColour; //used to be called StripeColour until i got sproutcat
         public FAtlas TailAtlas;
@@ -23,25 +23,32 @@ namespace JourneysStart.Shared.PlayerStuff
         public readonly string TailTextureName;
         public Texture2D TailTexture;
 
+        //private Unity.Collections.NativeArray<byte> TextureMipData;
+
+        private byte[] RedInTextureRef = { 255, 0, 0 }; //start as red/white, bc the mipData changes after the first time you apply
+        private byte[] WhiteInTextureRef = { 255, 255, 255 };
+
         public SlugTailTexture(Player player)
         {
-            name = player.slugcatStats.name;
+            SlugcatStats.Name name = player.slugcatStats.name;
 
             if (!Utility.IsModcat(name))
             {
-                Debug.Log($"{Plugin.MOD_NAME}: Player {player.slugcatStats.name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
+                Debug.Log($"{Plugin.MOD_NAME}: Player {name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
                 return;
             }
 
             if (Plugin.lghtbrpup == name)
             {
                 TailTextureName = "lightpup_tailstripes";
-                TailTexture = PlayerGrafHooks.LightpupTailTexture;
+                TailTexture = Plugin.LightpupTailTexture;
+                //TextureMipData = Plugin.LightpupTailTexture.GetPixelData<byte>(0);
             }
             else //if (Plugin.sproutcat == name)
             {
                 TailTextureName = "sproutcat_tailtexture";
-                TailTexture = PlayerGrafHooks.SproutcatTailTexture;
+                TailTexture = Plugin.SproutcatTailTexture;
+                //TextureMipData = Plugin.SproutcatTailTexture.GetPixelData<byte>(0);
             }
 
             Debug.Log($"{Plugin.MOD_NAME}: (SlugTailTexture) Creating new tail texture for {name.value}");
@@ -52,6 +59,14 @@ namespace JourneysStart.Shared.PlayerStuff
             LoadTailAtlas();
 
             OldPatternColour = PatternColour;
+
+            RedInTextureRef[0] = (byte)(BodyColour.r * 255);
+            RedInTextureRef[1] = (byte)(BodyColour.g * 255);
+            RedInTextureRef[2] = (byte)(BodyColour.b * 255);
+
+            WhiteInTextureRef[0] = (byte)(PatternColour.r * 255);
+            WhiteInTextureRef[1] = (byte)(PatternColour.g * 255);
+            WhiteInTextureRef[2] = (byte)(PatternColour.b * 255);
         }
         ~SlugTailTexture()
         {
@@ -64,6 +79,8 @@ namespace JourneysStart.Shared.PlayerStuff
                 Debug.LogException(e);
             }
         }
+
+        #region colours
         public void SetupColours(Player player)
         {
             //prevent arena colours being assinged to main player outside of arena
@@ -100,7 +117,10 @@ namespace JourneysStart.Shared.PlayerStuff
         }
         public void LoadDefaultColours(int playerNumber)
         {
-            if (SlugBaseCharacter.TryGet(name, out SlugBaseCharacter charac)
+            if (!playerRef.TryGetTarget(out Player player))
+                return;
+
+            if (SlugBaseCharacter.TryGet(player.slugcatStats.name, out SlugBaseCharacter charac)
                 && charac.Features.TryGet(PlayerFeatures.CustomColors, out ColorSlot[] customColours))
             {
                 //loading default colours
@@ -110,9 +130,11 @@ namespace JourneysStart.Shared.PlayerStuff
                     PatternColour = customColours[2].GetColor(playerNumber);
             }
         }
+        #endregion
+
         public void LoadTailAtlas()
         {
-            Texture2D tailTexture = new(TailTexture.width, TailTexture.height, TextureFormat.ARGB32, false);
+            Texture2D tailTexture = new(TailTexture.width, TailTexture.height, TextureFormat.ARGB32, false); //RGBA32 makes the red part invis
             Graphics.CopyTexture(TailTexture, tailTexture);
 
             MapTextureColour(tailTexture, Colour.red, BodyColour);
@@ -123,6 +145,25 @@ namespace JourneysStart.Shared.PlayerStuff
                 TailAtlas = Futile.atlasManager.LoadAtlasFromTexture(TailTextureName + "_" + player.playerState.playerNumber + UnityEngine.Random.value, tailTexture, false);
             }
         }
+        public void LoadTailAtlasInGame()
+        {
+            var mipData = (TailAtlas.texture as Texture2D).GetPixelData<byte>(0);
+            //var mipData = TextureMipData;
+            //mip map levels are different versions of a texture (for diff resolutions n all)
+            //mip 0 is the og texture. here, there's only 1 texture
+            //TailTexture.mipmapCount is 1
+
+            //in the texture, mipData[i] is only 255 or 0
+            //225, 225, 0, 0 is red (ARGB32)
+            //225, 225, 225, 225 is white
+
+            MapTextureColourInGame(ref mipData, ref RedInTextureRef, BodyColour);
+            MapTextureColourInGame(ref mipData, ref WhiteInTextureRef, PatternColour);
+
+            (TailAtlas.texture as Texture2D).SetPixelData(mipData, 0, 0); //mipmap level 0
+            (TailAtlas.texture as Texture2D).Apply(false);
+        }
+
         public void RecolourTail(Colour newBody, Colour newStripe)
         {
             if (newBody == BodyColour && newStripe == PatternColour)
@@ -130,8 +171,6 @@ namespace JourneysStart.Shared.PlayerStuff
 
             if (!playerRef.TryGetTarget(out _))
                 return;
-
-            //Debug.Log(Plugin.MOD_NAME + ": Recolouring tail to " + newBody.ToString() + " (body) and " + newStripe.ToString() + " (stripes)");
             BodyColour = newBody;
             PatternColour = newStripe;
 
@@ -147,7 +186,8 @@ namespace JourneysStart.Shared.PlayerStuff
             if (usingDMSTailSprite)
                 return;
 
-            LoadTailAtlas();
+            LoadTailAtlasInGame();
+            //LoadTailAtlas();
             RecolourUVMapTail();
         }
         public void RecolourUVMapTail()
@@ -181,7 +221,50 @@ namespace JourneysStart.Shared.PlayerStuff
             }
             texture.Apply(false);
         }
-        //in gameplay, instead use GetPixelData and SetPixelData
-        //otherwise its slow
+        public void MapTextureColourInGame(ref Unity.Collections.NativeArray<byte> mipData, ref byte[] from, Colour to)
+        {
+            byte toR = (byte)(to.r * 255);
+            byte toG = (byte)(to.g * 255);
+            byte toB = (byte)(to.b * 255);
+
+            if (from[0] == toR && from[1] == toG && from[2] == toB)
+                return; //just leave if its the same colour
+
+            //Debug.Log($"{Plugin.MOD_NAME}: ({from[0]}, {from[1]}, {from[2]}) -> ({toR}, {toG}, {toB})");
+            //int colsChanged = 0;
+
+            for (int i = 0; i < mipData.Length; i += 4)
+            {
+                //if alpha is invisible, continue
+                if (mipData[i] == 0) //0 = invis, 255 = full vis
+                    continue;
+
+                int indexR = i + 1;
+                int indexG = i + 2;
+                int indexB = i + 3;
+                //Debug.Log($"\t(alpha) mipData[{i}] = {mipData[i]}");
+                if (mipData[indexR] == from[0] && mipData[indexG] == from[1] && mipData[indexB] == from[2])
+                {
+                    //colsChanged++; //debug
+                    mipData[indexR] = toR;
+                    mipData[indexG] = toG;
+                    mipData[indexB] = toB;
+                }
+            }
+
+            from[0] = toR; //change the byte array data since the tail texture is being changed in CPU
+            from[1] = toG;
+            from[2] = toB;
+
+            //Debug.Log($"\t{Plugin.MOD_NAME}: Changed colour {colsChanged} times");
+            //if (0 == colsChanged)
+            //{
+            //    Debug.Log($"{Plugin.MOD_NAME}: INCOMING LAG! I NEED TO READ THIS BYTE ARRAY");
+            //    for (int i = 0; i < mipData.Length; i++)
+            //    {
+            //        Debug.Log($"\t{Plugin.MOD_NAME}: mipData[{i}] = {mipData[i]}");
+            //    }
+            //}
+        }
     }
 }

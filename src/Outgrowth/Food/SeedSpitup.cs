@@ -21,27 +21,27 @@ public class SeedSpitup
 
     public static bool CanRegurgitate(Player self)
     {
-        if (Plugin.sproutcat == self.slugcatStats.name)
-        {
-            if (Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p) && p.IsSproutcat)
-            {
-                return p.Sproutcat.SeedSpitUpMax > 0 && null == self.objectInStomach && self.FoodInStomach > 0 && -1 != self.FreeHand();
-            }
-            else
-            {
-                Debug.Log($"{Plugin.MOD_NAME}: (CanRegurgitate) Unable to get value from PlayerDataCWT");
-                return false;
-            }
-        }
-        return false;
+        return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p)
+            && p.IsSproutcat
+            && (p.Sproutcat.SeedSpitUpMax > 0 || self.FoodInStomach > 0)
+            && null == self.objectInStomach
+            && -1 != self.FreeHand();
     }
     #region oatmealine's regurgitation code from modding academy (thanks a lot!)
     public static void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
     {
-        if (self.objectInStomach == null && CanRegurgitate(self) && Plugin.PlayerDataCWT.TryGetValue(self, out var p) && p.IsSproutcat)
+        if (self.objectInStomach == null && CanRegurgitate(self) && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p) && p.IsSproutcat)
         {
-            p.Sproutcat.SeedSpitUpMax--;
-            Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating seed ({p.Sproutcat.SeedSpitUpMax} left)");
+            if (p.Sproutcat.SeedSpitUpMax > 0)
+            {
+                p.Sproutcat.SeedSpitUpMax--;
+                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating free seed ({p.Sproutcat.SeedSpitUpMax} left)");
+            }
+            else
+            {
+                self.SubtractFood(1);
+                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating seed, subtracted food");
+            }
             self.objectInStomach = new SeedAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID());
         }
         orig(self);
@@ -67,11 +67,7 @@ public class SeedSpitup
 
             // insert the condition
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate(CanRegurgitate); //intellisense is telling me i can just do this instead of the below? woah
-            /*c.EmitDelegate<Func<Player, bool>>(player =>
-            {
-                return CanRegurgitate(player);
-            });*/
+            c.EmitDelegate(CanRegurgitate);
 
             // if it's true, skip ahead
             c.Emit(OpCodes.Brtrue_S, skipGourmandCond);

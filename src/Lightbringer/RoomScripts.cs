@@ -4,6 +4,8 @@ using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using AbstractDataPearl = DataPearl.AbstractDataPearl;
 using static JourneysStart.Lightbringer.Data.FRDData;
 using static JourneysStart.Utility;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace JourneysStart.Lightbringer;
 
@@ -114,6 +116,15 @@ public class RoomScripts
                 player.playerState.foodInStomach = SlugcatStats.SlugcatFoodMeter(Plugin.lghtbrpup).y;
             }
 
+            foreach (List<PhysicalObject> physObjList in room.physicalObjects)
+            {
+                if (physObjList.Any(physObj => physObj is DataPearl dataPearlInRoom && dataPearlInRoom.AbstractPearl.dataPearlType == LightpupPearl))
+                {
+                    //dont spawn a 2nd pearl if theres already one
+                    goto SpawnPearlOver;
+                }
+            }
+
             AbstractDataPearl porl = new(room.world, AbstractObjectType.DataPearl, null, RealizedPlayer.abstractPhysicalObject.pos, room.game.GetNewID(), -1, -1, null, LightpupPearl);
 
             if (-1 != RealizedPlayer.FreeHand())
@@ -123,6 +134,7 @@ public class RoomScripts
             else
                 RealizedPlayer.objectInStomach = porl;
 
+            SpawnPearlOver:
             room.game.GetStorySession.saveState.miscWorldSaveData.playerGuideState.likesPlayer = 1f;
 
             Destroy();

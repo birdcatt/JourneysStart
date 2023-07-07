@@ -32,6 +32,7 @@ public static class PlayerGrafMethods
         for (int i = tail.vertices.Length - 1; i >= 0; i--)
         {
             float perc = i / 2 / (float)(tail.vertices.Length / 2);
+
             Vector2 uv;
             if (i % 2 == 0)
                 uv = new Vector2(perc, 0f);
@@ -47,12 +48,13 @@ public static class PlayerGrafMethods
             tail.UVvertices[i] = uv;
         }
     }
-    public static void AddNewSpritesToContainer(ref RoomCamera.SpriteLeaser sLeaser, ref RoomCamera rCam, int index)
+
+    public static void AddNewSpritesToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, int index)
     {
         //makes it so body stripes dont go on top of every creature
         rCam.ReturnFContainer("Foreground").RemoveChild(sLeaser.sprites[index]);
         rCam.ReturnFContainer("Midground").AddChild(sLeaser.sprites[index]);
-        sLeaser.sprites[index].MoveToBack(); //so stripes wont go in front when being jolly carried
+
         sLeaser.sprites[index].MoveBehindOtherNode(sLeaser.sprites[9]); //stripes and everything behind face
     }
     #endregion
@@ -61,8 +63,14 @@ public static class PlayerGrafMethods
     {
         public static void MSCUpdate(PlayerGraphics self)
         {
-            if (!(Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData) && pData.IsSproutcat))
+            //if (!(Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData) && pData.IsSproutcat))
+            //    return;
+
+            if (Plugin.sproutcat != self.player.SlugCatClass)
                 return;
+
+            self.lastStretch = self.stretch;
+            self.stretch = self.RopeStretchFac;
 
             List<Vector2> list = new();
             for (int j = self.player.tongue.rope.TotalPositions - 1; j > 0; j--)
@@ -87,7 +95,8 @@ public static class PlayerGrafMethods
             for (int i = 0; i < self.ropeSegments.Length; i++)
             {
                 self.ropeSegments[i].Update();
-                //IndexOutOfRangeException: Index was outside the bounds of the array if i put ConnectRopeSegments here
+                //IndexOutOfRangeException: Index was outside the bounds of the array
+                //if i put ConnectRopeSegments here
             }
             for (int n = 1; n < self.ropeSegments.Length; n++)
             {
@@ -98,7 +107,11 @@ public static class PlayerGrafMethods
                 self.ropeSegments[num3].claimedForBend = false;
             }
         }
-
+        public static void AddToContainer(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser)
+        {
+            Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData);
+            sLeaser.sprites[pData.Sproutcat.spriteIndexes[ROPE_INDEX]].MoveBehindOtherNode(sLeaser.sprites[0]); //move rope behind head
+        }
         public static void DrawSprites(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, float timeStacker, Vector2 camPos)
         {
             if (null == self.player.room)
@@ -106,7 +119,7 @@ public static class PlayerGrafMethods
 
             Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData playerData);
 
-            int ropeIndex = playerData.Sproutcat.spriteIndexes[RopeIndex];
+            int ropeIndex = playerData.Sproutcat.spriteIndexes[ROPE_INDEX];
             float b = Mathf.Lerp(self.lastStretch, self.stretch, timeStacker);
             Vector2 vector = Vector2.Lerp(self.ropeSegments[0].lastPos, self.ropeSegments[0].pos, timeStacker);
             Vector2 vector2;
@@ -133,6 +146,7 @@ public static class PlayerGrafMethods
                 {
                     num7 += num9;
                 }
+                //yeah you need all these below otherwise its invisible
                 (sLeaser.sprites[ropeIndex] as TriangleMesh).MoveVertice((k - 1) * 4, vector11 - camPos);
                 (sLeaser.sprites[ropeIndex] as TriangleMesh).MoveVertice((k - 1) * 4 + 1, vector + a2 * d4 - camPos);
                 (sLeaser.sprites[ropeIndex] as TriangleMesh).MoveVertice((k - 1) * 4 + 2, vector2 - a2 * d4 - camPos);
@@ -153,7 +167,7 @@ public static class PlayerGrafMethods
         {
             Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData playerData);
 
-            int ropeIndex = playerData.Sproutcat.spriteIndexes[RopeIndex];
+            int ropeIndex = playerData.Sproutcat.spriteIndexes[ROPE_INDEX];
             for (int i = 0; i < (sLeaser.sprites[ropeIndex] as TriangleMesh).verticeColors.Length; i++)
             {
                 (sLeaser.sprites[ropeIndex] as TriangleMesh).verticeColors[i] = colour;

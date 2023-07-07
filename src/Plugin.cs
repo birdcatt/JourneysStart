@@ -1,12 +1,11 @@
 ﻿using System.Runtime.CompilerServices; //CWT
 using BepInEx;
 using SlugBase.Features;
-//using SlugBase.DataTypes;
-//using SlugBase;
 using static SlugBase.Features.FeatureTypes;
 using Debug = UnityEngine.Debug;
 using System.Linq; //for ModManager.ActiveMods.Any
 using Exception = System.Exception;
+
 using JourneysStart.Shared;
 using JourneysStart.Lightbringer;
 using JourneysStart.Outgrowth;
@@ -15,6 +14,7 @@ using JourneysStart.FisobsItems.Seed;
 using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff;
 using PlayerData = JourneysStart.Shared.PlayerStuff.PlayerData;
+using Texture2D = UnityEngine.Texture2D;
 
 namespace JourneysStart
 {
@@ -29,7 +29,18 @@ namespace JourneysStart
         public static readonly SlugcatStats.Name sproutcat = new("sproutcat");
         public static ConditionalWeakTable<Player, PlayerData> PlayerDataCWT = new();
 
-        #region lightpup variables
+        public static Texture2D LightpupTailTexture;
+        public static Texture2D SproutcatTailTexture;
+
+        #region sfx
+        public static SoundID sproutcat_bush_rustle1;
+        public static SoundID sproutcat_bush_rustle2;
+        public static SoundID sproutcat_bush_rustle3;
+        public static SoundID sproutcat_bush_rustle4;
+        public static SoundID sproutcat_bush_rustle5;
+        #endregion
+
+        #region lightpup slugbase variables
         public static readonly PlayerFeature<int> LikesFoodJumpValue = PlayerInt("lightpup/likes_food_jump_value");
 
         public static readonly PlayerFeature<float> SkinnyScale_Index0 = PlayerFloat("lightpup/skinny_scale_index0");
@@ -47,7 +58,7 @@ namespace JourneysStart
         public static readonly GameFeature<bool> Lightpup_Debug_DisableStartRain = GameBool("lightpup/debug/disable_start_rain");
         #endregion
 
-        #region outgrowth variables
+        #region outgrowth slugbase variables
         public static readonly GameFeature<bool> Sprout_Debug_UnlockProgression = GameBool("sproutcat/debug/unlock_progression");
         public static readonly PlayerFeature<bool> Sprout_Debug_CheekFluffColours = PlayerBool("sproutcat/debug/cheek_fluff_colours");
         public static readonly PlayerFeature<bool> Sprout_Debug_NoAncientBot = PlayerBool("sproutcat/debug/no_ancient_bot");
@@ -78,8 +89,14 @@ namespace JourneysStart
             if (!Futile.atlasManager.DoesContainAtlas("journeysstart_assets"))
                 Futile.atlasManager.LoadAtlas("atlases/journeysstart_assets");
 
-            PlayerGrafMethods.TailTextureFilePath(ref PlayerGrafHooks.LightpupTailTexture, "lightpup_tailstripes");
-            PlayerGrafMethods.TailTextureFilePath(ref PlayerGrafHooks.SproutcatTailTexture, "sproutcat_tailtexture");
+            sproutcat_bush_rustle1 = new("sproutcat-bush-rustle1", true); //cant have _ in them
+            sproutcat_bush_rustle2 = new("sproutcat-bush-rustle2", true);
+            sproutcat_bush_rustle3 = new("sproutcat-bush-rustle3", true);
+            sproutcat_bush_rustle4 = new("sproutcat-bush-rustle4", true);
+            sproutcat_bush_rustle5 = new("sproutcat-bush-rustle5", true);
+
+            PlayerGrafMethods.TailTextureFilePath(ref LightpupTailTexture, "lightpup_tailstripes");
+            PlayerGrafMethods.TailTextureFilePath(ref SproutcatTailTexture, "sproutcat_tailtexture");
             On.Player.ctor += Player_ctor;
             PlayerGrafHooks.Hook();
 
@@ -156,7 +173,7 @@ namespace JourneysStart
                 }
                 else if (sproutcat == name)
                 {
-                    self.tongue = new Player.Tongue(self, 0);
+                    self.tongue = new Player.Tongue(self, 0); //2nd arg is index
                 }
             }
         }

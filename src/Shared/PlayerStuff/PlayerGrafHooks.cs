@@ -7,15 +7,11 @@ using Mono.Cecil.Cil;
 using static JourneysStart.Outgrowth.PlayerStuff.OutgrowthData;
 using Vector2 = UnityEngine.Vector2;
 using static JourneysStart.Shared.PlayerStuff.PlayerGrafMethods;
-using System.Reflection;
-using SlugBase.Features;
 
 namespace JourneysStart.Shared.PlayerStuff;
 
 public class PlayerGrafHooks
 {
-    public static Texture2D LightpupTailTexture;
-    public static Texture2D SproutcatTailTexture;
     public static void Hook()
     {
         On.PlayerGraphics.MSCUpdate += PlayerGraphics_MSCUpdate;
@@ -122,19 +118,20 @@ public class PlayerGrafHooks
 
                     Array.Resize(ref sLeaser.sprites, num);
 
-                    sLeaser.sprites[pData.Sproutcat.spriteIndexes[0]] = new FSprite("sproutcat_bodyscar", true);
-                    sLeaser.sprites[pData.Sproutcat.spriteIndexes[1]] = TriangleMesh.MakeLongMesh(self.ropeSegments.Length - 1, false, true);
+                    sLeaser.sprites[pData.Sproutcat.spriteIndexes[0]] = new FSprite("sproutcat_bodyscar", true); //body scar
+                    sLeaser.sprites[pData.Sproutcat.spriteIndexes[1]] = TriangleMesh.MakeLongMesh(self.ropeSegments.Length - 1, false, true); //rope
                     pData.Sproutcat.cheekFluff.InitiateSprites(sLeaser);
                 }
 
-                Debug.Log($"{Plugin.MOD_NAME}: {self.player.SlugCatClass}'s sLeaser.sprites.Length is {sLeaser.sprites.Length}");
-                for (int i = 0; i < sLeaser.sprites.Length; i++)
-                {
-                    if (null == sLeaser.sprites[i])
-                        Debug.Log($"\tsLeaser.sprites[{i}] is NULL");
-                    else
-                        Debug.Log($"\tsLeaser.sprites[{i}].element.name is {sLeaser.sprites[i].element.name}");
-                }
+                //Debug.Log($"{Plugin.MOD_NAME}: {self.player.SlugCatClass}'s sLeaser.sprites.Length is {sLeaser.sprites.Length}");
+                //for (int i = 0; i < sLeaser.sprites.Length; i++)
+                //{
+                //    if (null == sLeaser.sprites[i])
+                //        Debug.Log($"\tsLeaser.sprites[{i}] is NULL");
+                //    else
+                //        Debug.Log($"\tsLeaser.sprites[{i}].element.name is {sLeaser.sprites[i].element.name}");
+                //}
+
                 //no need to call self.AddToContainer(sLeaser, rCam, null); since i IL'd to before that
             }
         });
@@ -142,12 +139,12 @@ public class PlayerGrafHooks
     public static void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         bool PlayerIsModcat = Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData playerData) && playerData.IsModcat;
-        Vector2 vector = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
-        Vector2 vector2 = Vector2.Lerp(self.drawPositions[1, 1], self.drawPositions[1, 0], timeStacker);
 
         if (PlayerIsModcat)
         {
             //maths for lightpup's body stripes / sproutcat's body scar
+            Vector2 vector = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
+            Vector2 vector2 = Vector2.Lerp(self.drawPositions[1, 1], self.drawPositions[1, 0], timeStacker);
             float xPos = (vector2.x * 2f + vector.x) / 3f - camPos.x;
             float yPos = (vector2.y * 2f + vector.y) / 3f - camPos.y - self.player.sleepCurlUp * 3f;
 
@@ -179,7 +176,7 @@ public class PlayerGrafHooks
             }
             else if (playerData.IsSproutcat)
             {
-                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BodyScarIndex];
+                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX];
                 sLeaser.sprites[bodyScarIndex].color = playerData.tailPattern.PatternColour;
                 //scaleX and scaleY done after orig
 
@@ -212,7 +209,7 @@ public class PlayerGrafHooks
             }
             else if (playerData.IsSproutcat)
             {
-                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BodyScarIndex];
+                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX];
                 sLeaser.sprites[bodyScarIndex].scaleX = sLeaser.sprites[1].scaleX;
                 sLeaser.sprites[bodyScarIndex].scaleY = sLeaser.sprites[1].scaleY;
 
@@ -228,7 +225,7 @@ public class PlayerGrafHooks
             pData.SpritesInited = false; //for next time
             if (pData.IsLightpup)
             {
-                AddNewSpritesToContainer(ref sLeaser, ref rCam, pData.Lightpup.stripeIndex);
+                AddNewSpritesToContainer(sLeaser, rCam, pData.Lightpup.stripeIndex);
                 sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[1]); //tail behind hips
             }
             else if (pData.IsSproutcat)
@@ -236,9 +233,9 @@ public class PlayerGrafHooks
                 pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, rCam.ReturnFContainer("Midground")); //so fluff is behind everything else
                 foreach (int i in pData.Sproutcat.spriteIndexes)
                 {
-                    AddNewSpritesToContainer(ref sLeaser, ref rCam, i);
+                    AddNewSpritesToContainer(sLeaser, rCam, i);
                 }
-                sLeaser.sprites[pData.Sproutcat.spriteIndexes[RopeIndex]].MoveBehindOtherNode(sLeaser.sprites[0]); //move rope behind head
+                RopeMethods.AddToContainer(self, sLeaser);
             }
         }
     }
@@ -265,7 +262,7 @@ public class PlayerGrafHooks
             }
             else if (playerData.IsSproutcat)
             {
-                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BodyScarIndex];
+                int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX];
                 sLeaser.sprites[bodyScarIndex].color = stripeColour;
 
                 playerData.Sproutcat.cheekFluff.ApplyPalette(sLeaser);

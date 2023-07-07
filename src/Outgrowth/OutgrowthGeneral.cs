@@ -4,6 +4,7 @@ using System.Reflection;
 //using Mono.Cecil.Cil;
 using JourneysStart.Outgrowth.Food;
 using JourneysStart.Outgrowth.PlayerStuff;
+using JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
 
 namespace JourneysStart.Outgrowth
 {
@@ -13,6 +14,7 @@ namespace JourneysStart.Outgrowth
         {
             Diet.Hook();
             SeedSpitup.Hook();
+            RopeHooks.Hook();
             WormgrassImmunity.Hook();
             GeneralHooks();
         }

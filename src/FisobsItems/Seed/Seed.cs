@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Colour = UnityEngine.Color;
+using Vector2 = UnityEngine.Vector2;
+using Mathf = UnityEngine.Mathf;
 //using RWCustom;
 //using Smoke;
 
@@ -62,10 +64,10 @@ public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
     }
     public virtual void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
     {
-        Color color = Color.Lerp(new Color(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
-        sLeaser.sprites[0].color = color;
-        sLeaser.sprites[1].color = color + new Color(0.3f, 0.3f, 0.3f) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
-        sLeaser.sprites[2].color = Color.Lerp(new Color(1f, 0f, 0f), palette.blackColor, 0.3f);
+        Colour colour = Colour.Lerp(new Colour(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
+        sLeaser.sprites[0].color = colour;
+        sLeaser.sprites[1].color = colour + new Colour(0.3f, 0.3f, 0.3f) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
+        sLeaser.sprites[2].color = Colour.Lerp(new Colour(1f, 0f, 0f), palette.blackColor, 0.3f);
     }
     public virtual void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
     {

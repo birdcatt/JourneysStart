@@ -152,8 +152,11 @@ sealed class LightpupData
 
     public void RemoveFlareCharge()
     {
+        if (0 == flareCharge)
+            return;
+
         flareCharge--;
-        Debug.Log($"{Plugin.MOD_NAME}: Flare charge used up ({flareCharge}/{flareChargeMax}) left)");
+        Debug.Log($"{Plugin.MOD_NAME}: Flare charge used up ({flareCharge}/{flareChargeMax} left)");
 
         playerData.playerRef.TryGetTarget(out Player player);
 

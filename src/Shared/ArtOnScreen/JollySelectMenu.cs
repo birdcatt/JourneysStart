@@ -226,6 +226,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             Extra = new(menu, self, "", "jollyicon_extra-lightbringer", pos, true, true);
 
             AddAllPortraits();
+            PortraitsEnabled = true; //so DisableAllPortraits can run correctly
             DisableAllPortraits();
         }
         ~JollyMenuPortraits()
