@@ -14,6 +14,9 @@ sealed class OutgrowthData
     public int SeedSpitUpMax;
     public bool AteABugThisCycle;
 
+    public int inWater;
+    public const int inWaterMax = 4 * 40;
+
     public int[] spriteIndexes;
     //0 - body scar
     //1 - rope
@@ -45,6 +48,28 @@ sealed class OutgrowthData
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return;
 
+        if (player.dead)
+            return;
+
+        if (player.Submersion > 0 && !player.input[0].AnyInput)
+        {
+            if (inWater >= inWaterMax)
+            {
+                player.AddQuarterFood();
+                inWater = 1 * 40;
+            }
+            else
+                inWater++;
+        }
+        else if (inWater != 0)
+            inWater = 0;
+    }
+
+    public void TongueUpdate()
+    {
+        if (!playerData.playerRef.TryGetTarget(out Player player))
+            return;
+
         //from ClassMechanicsSaint
         if (CanShootTongue())
         {
@@ -68,6 +93,9 @@ sealed class OutgrowthData
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return false;
 
+        if (player.tongue.mode != Player.Tongue.Mode.Retracted)
+            return false;
+
         if (!(player.input[0].jmp && !player.input[1].jmp && !player.input[0].pckp && player.canJump <= 0))
             return false;
 
@@ -83,9 +111,6 @@ sealed class OutgrowthData
             || player.animation == Player.AnimationIndex.HangFromBeam
             || player.animation == Player.AnimationIndex.VineGrab
             || player.animation == Player.AnimationIndex.ZeroGPoleGrab)
-            return false;
-
-        if (player.tongue.mode != Player.Tongue.Mode.Retracted)
             return false;
 
         //if (cfgOldTongue), code elsewhere should take care of it

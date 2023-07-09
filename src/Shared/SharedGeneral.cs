@@ -4,6 +4,7 @@ using MSC_AbstractObjectType = MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType
 using System.Linq;
 using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.Shared.ArtOnScreen;
+using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
 namespace JourneysStart.Shared;
 
@@ -12,15 +13,22 @@ public class SharedGeneral
     public static void Hook()
     {
         PlayerGrafHooks.Hook();
+        Crafting.Hook();
+
         CutscenesSlideshows.Hook();
         JollySelectMenu.Hook();
         OracleDialogue.Hook();
         RoomScriptHooks.Hook();
+
         GeneralHooks();
     }
 
     public static void GeneralHooks()
     {
+        On.Player.ctor += Player_ctor;
+        On.Player.Update += Player_Update;
+        On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+
         On.SlugcatStats.SpearSpawnElectricRandomChance += SpearSpawnElectricChance;
         On.SlugcatStats.SpearSpawnExplosiveRandomChance += SpearSpawnExplosiveChance;
 
@@ -29,6 +37,46 @@ public class SharedGeneral
         On.Player.ObjectEaten += Player_ObjectEaten; //food reaction + eating a bug
     }
 
+    #region ctor and update
+    public static void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+    {
+        orig(self, abstractCreature, world);
+
+        SlugcatStats.Name name = self.slugcatStats.name;
+        if (Utility.IsModcat(name))
+        {
+            if (!PlayerDataCWT.TryGetValue(self, out _))
+                PlayerDataCWT.Add(self, new PlayerData(self));
+
+            if (lghtbrpup == name)
+            {
+                self.setPupStatus(true); //thanks oatmealine
+            }
+            else if (sproutcat == name)
+            {
+                self.tongue = new Player.Tongue(self, 0); //2nd arg is index
+            }
+        }
+    }
+    public static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+    {
+        orig(self, eu);
+        if (self.room != null && PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
+        {
+            playerData.Update();
+        }
+    }
+    public static void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
+    {
+        if (self.room != null && PlayerDataCWT.TryGetValue(self, out PlayerData pData) && pData.IsSproutcat)
+        {
+            pData.Sproutcat.TongueUpdate();
+        }
+        orig(self);
+    }
+    #endregion
+
+    #region spear spawn chance
     public static float SpearSpawnElectricChance(On.SlugcatStats.orig_SpearSpawnElectricRandomChance orig, SlugcatStats.Name index)
     {
         if (lghtbrpup == index)
@@ -45,6 +93,7 @@ public class SharedGeneral
             return orig(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
         return orig(index);
     }
+    #endregion
 
     public static bool WorldLoader_OverseerSpawnConditions(On.WorldLoader.orig_OverseerSpawnConditions orig, WorldLoader self, SlugcatStats.Name character)
     {

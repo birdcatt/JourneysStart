@@ -134,6 +134,7 @@ public static class ElecResist
                 if (self.grasps[i]?.grabbed is Player playerInThisLoop && playerInThisLoop == shockObj)
                 {
                     self.ReleaseGrasp(i); //drop player
+                    break;
                 }
             }
             self.Stun(90);

@@ -18,10 +18,10 @@ namespace JourneysStart
 
         public static Configurable<int> flareCooldown; //this is in seconds, so x/40
 
-        public static Configurable<KeyCode> p1FlareKey;
-        public static Configurable<KeyCode> p2FlareKey;
-        public static Configurable<KeyCode> p3FlareKey;
-        public static Configurable<KeyCode> p4FlareKey;
+        //public static Configurable<KeyCode> p1FlareKey;
+        //public static Configurable<KeyCode> p2FlareKey;
+        //public static Configurable<KeyCode> p3FlareKey;
+        //public static Configurable<KeyCode> p4FlareKey;
 
         public ConfigMenu()
         {
@@ -45,30 +45,30 @@ namespace JourneysStart
                     "Flare Cooldown"
                 }));
 
-            p1FlareKey = config.Bind("p1FlareKey", KeyCode.LeftControl,
-                new ConfigurableInfo("Player 1's keybind for the flare ability.",
-                tags: new object[]
-                {
-                    "Player 1"
-                }));
-            p2FlareKey = config.Bind("p2FlareKey", new KeyCode(),
-                new ConfigurableInfo("Player 2's keybind for the flare ability.",
-                tags: new object[]
-                {
-                    "Player 2"
-                }));
-            p3FlareKey = config.Bind("p3FlareKey", new KeyCode(),
-                new ConfigurableInfo("Player 3's keybind for the flare ability.",
-                tags: new object[]
-                {
-                    "Player 3"
-                }));
-            p4FlareKey = config.Bind("p4FlareKey", new KeyCode(),
-                new ConfigurableInfo("Player 4's keybind for the flare ability.",
-                tags: new object[]
-                {
-                    "Player 4"
-                }));
+            //p1FlareKey = config.Bind("p1FlareKey", /*KeyCode.LeftControl*/ KeyCode.Joystick1Button4,
+            //    new ConfigurableInfo("Player 1's keybind for the flare ability.",
+            //    tags: new object[]
+            //    {
+            //        "Player 1"
+            //    }));
+            //p2FlareKey = config.Bind("p2FlareKey", new KeyCode(),
+            //    new ConfigurableInfo("Player 2's keybind for the flare ability.",
+            //    tags: new object[]
+            //    {
+            //        "Player 2"
+            //    }));
+            //p3FlareKey = config.Bind("p3FlareKey", new KeyCode(),
+            //    new ConfigurableInfo("Player 3's keybind for the flare ability.",
+            //    tags: new object[]
+            //    {
+            //        "Player 3"
+            //    }));
+            //p4FlareKey = config.Bind("p4FlareKey", new KeyCode(),
+            //    new ConfigurableInfo("Player 4's keybind for the flare ability.",
+            //    tags: new object[]
+            //    {
+            //        "Player 4"
+            //    }));
         }
 
         //called when config menu is opened by player

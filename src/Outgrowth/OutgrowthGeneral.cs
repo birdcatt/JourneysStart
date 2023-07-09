@@ -5,6 +5,7 @@ using System.Reflection;
 using JourneysStart.Outgrowth.Food;
 using JourneysStart.Outgrowth.PlayerStuff;
 using JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
+using Debug = UnityEngine.Debug;
 
 namespace JourneysStart.Outgrowth
 {
@@ -14,14 +15,20 @@ namespace JourneysStart.Outgrowth
         {
             Diet.Hook();
             SeedSpitup.Hook();
+
             RopeHooks.Hook();
+
             WormgrassImmunity.Hook();
+            Crafting.Hook();
+            
             GeneralHooks();
         }
         public static void GeneralHooks()
         {
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(),
                 typeof(OutgrowthGeneral).GetMethod("RegionGate_MeetRequirement_get", BindingFlags.Static | BindingFlags.Public));
+
+            On.Player.ThrowObject += Player_ThrowObject;
         }
 
         public delegate bool orig_RegionGate_MeetRequirement(RegionGate self);
@@ -36,6 +43,18 @@ namespace JourneysStart.Outgrowth
                 return true;
             }
             return val;
+        }
+
+        public static void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
+        {
+            if (Plugin.sproutcat == self.slugcatStats.name && self.grasps[grasp].grabbed is Spear)
+            {
+                //Debug.Log($"{Plugin.MOD_NAME}: Toss spear");
+                self.TossObject(grasp, eu);
+                self.ReleaseGrasp(grasp);
+                //returns in orig since grasp is null now
+            }
+            orig(self, grasp, eu);
         }
     }
 }

@@ -8,7 +8,7 @@ using Custom = RWCustom.Custom;
 
 //beecat started off most of this code o7 thanks
 //this code is quite ugly but also it works
-namespace JourneysStart.Shared.PlayerStuff
+namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
 {
     public class SlugTailTexture
     {
@@ -32,6 +32,7 @@ namespace JourneysStart.Shared.PlayerStuff
         {
             SlugcatStats.Name name = player.slugcatStats.name;
 
+            Debug.Log($"{Plugin.MOD_NAME}: (SlugTailTexture) Creating new tail texture for {name.value}");
             if (!Utility.IsModcat(name))
             {
                 Debug.Log($"{Plugin.MOD_NAME}: Player {name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
@@ -42,16 +43,12 @@ namespace JourneysStart.Shared.PlayerStuff
             {
                 TailTextureName = "lightpup_tailstripes";
                 TailTexture = Plugin.LightpupTailTexture;
-                //TextureMipData = Plugin.LightpupTailTexture.GetPixelData<byte>(0);
             }
             else //if (Plugin.sproutcat == name)
             {
                 TailTextureName = "sproutcat_tailtexture";
                 TailTexture = Plugin.SproutcatTailTexture;
-                //TextureMipData = Plugin.SproutcatTailTexture.GetPixelData<byte>(0);
             }
-
-            Debug.Log($"{Plugin.MOD_NAME}: (SlugTailTexture) Creating new tail texture for {name.value}");
 
             playerRef = new WeakReference<Player>(player);
 
@@ -147,6 +144,11 @@ namespace JourneysStart.Shared.PlayerStuff
         }
         public void LoadTailAtlasInGame()
         {
+            //if (playerRef.TryGetTarget(out Player player))
+            //{
+            //    Debug.Log($"{Plugin.MOD_NAME}: Recolouring tail for player {player.playerState.playerNumber}");
+            //}
+
             var mipData = (TailAtlas.texture as Texture2D).GetPixelData<byte>(0);
             //var mipData = TextureMipData;
             //mip map levels are different versions of a texture (for diff resolutions n all)
@@ -171,6 +173,7 @@ namespace JourneysStart.Shared.PlayerStuff
 
             if (!playerRef.TryGetTarget(out _))
                 return;
+
             BodyColour = newBody;
             PatternColour = newStripe;
 

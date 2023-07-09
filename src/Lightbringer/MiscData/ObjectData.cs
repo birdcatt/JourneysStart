@@ -25,6 +25,40 @@ namespace JourneysStart.Lightbringer.Data
 
             base.Update(eu);
             firstChunk.pos = player.bodyChunks[1].pos;
+
+            foreach (AbstractCreature crit in room.abstractRoom.creatures)
+            {
+                if (crit == null || crit.realizedCreature == null)
+                    continue;
+
+                if (crit.realizedCreature == player)
+                    continue;
+
+                if (crit.realizedCreature is Player && !Custom.rainWorld.options.friendlyFire)
+                    continue;
+
+                if (!(Custom.DistLess(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos, LightIntensity * 600f)
+                    || (Custom.DistLess(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos, LightIntensity * 1600f)
+                    && room.VisualContact(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos))))
+                {
+                    continue;
+                }
+
+                if (crit.realizedCreature.grasps != null)
+                {
+                    for (int i = 0; i < crit.realizedCreature.grasps.Length; i++)
+                    {
+                        if (crit.realizedCreature.grasps[i]?.grabbed is Player playerBeingHeld && playerBeingHeld == player)
+                        {
+                            crit.realizedCreature.ReleaseGrasp(i); //drop player
+                            player.room.AddObject(new CreatureSpasmer(crit.realizedCreature, false, 40));
+                            break;
+                        }
+                    }
+                }
+
+                crit.realizedCreature.Stun(Random.Range(20, 30));
+            }
         }
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {

@@ -6,6 +6,7 @@ using Colour = UnityEngine.Color;
 using Custom = RWCustom.Custom;
 using MoreSlugcats;
 using static JourneysStart.Utility;
+using System.Reflection;
 
 namespace JourneysStart.FisobsItems.Taser;
 
@@ -155,6 +156,7 @@ public class Taser : Rock
         crit.Violence(firstChunk, new Vector2?(firstChunk.vel * firstChunk.mass), result.chunk, result.onAppendagePos, Creature.DamageType.Blunt, 0.01f, stunBonus);
         room.PlaySound(SoundID.Rock_Hit_Creature, firstChunk);
     }
+
     #region sprites
     public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
@@ -200,8 +202,16 @@ public class Taser : Rock
             sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(Vector2.zero, Vector3.Slerp(lastRotation, rotation, timeStacker));
 
             sLeaser.sprites[i].color = Colour.Lerp(electricColour, Colour.white, Mathf.Abs(Mathf.Sin(fluxTimers[i]))); //the fluxTimer is why it's a for and not foreach
-            if (AbstractTaser.electricCharge < 3)
+            if (AbstractTaser.electricCharge == 0)
+            {
+                //more blue to distinguish from regular rocks
+                Colour myDude = rCam.currentPalette.blackColor;
+                sLeaser.sprites[i].color = new Colour(myDude.r, myDude.g, myDude.b + 0.1f);
+            }
+            else if (AbstractTaser.electricCharge < 3)
+            {
                 SetChargeDependantElectricColour(sLeaser, rCam, i, AbstractTaser.electricCharge);
+            }
         }
 
         if (slatedForDeletetion || room != rCam.room)

@@ -108,7 +108,6 @@ public class CheekFluff
         for (int i = startIndex; i < endIndex; i++)
         {
             container.AddChild(sLeaser.sprites[i]);
-            sLeaser.sprites[i].MoveToBack();
             sLeaser.sprites[i].MoveBehindOtherNode(sLeaser.sprites[9]); //move behind face
         }
     }
@@ -156,9 +155,15 @@ public class CheekFluff
 
             int index = i - startIndex; //for the scale array
 
+            float rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(scales[index].lastPos, scales[index].pos, timeStacker)) + rotationAngle;
+            if (i % 2 != 0) //clamp so he doesnt go bald when hanging around
+                rotation = Mathf.Clamp(rotation, 90f, 360f);
+            else
+                rotation = Mathf.Clamp(rotation, -360f, 90f);
+
             sLeaser.sprites[i].x = vector.x - camPos.x;
             sLeaser.sprites[i].y = vector.y - camPos.y;
-            sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(scales[index].lastPos, scales[index].pos, timeStacker)) + rotationAngle;
+            sLeaser.sprites[i].rotation = rotation;
         }
     }
     public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser)

@@ -1,6 +1,7 @@
 ﻿using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using static JourneysStart.Plugin;
+using Debug = UnityEngine.Debug;
 
 namespace JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
 
@@ -8,11 +9,27 @@ public class RopeHooks
 {
     public static void Hook()
     {
+        On.Player.SaintTongueCheck += Player_SaintTongueCheck;
+
         //all these IL's just for sfx
         IL.Player.Tongue.AttachToChunk += Tongue_AttachToChunk;
         IL.Player.Tongue.AttachToTerrain += Tongue_AttachToTerrain;
         IL.Player.Tongue.Release += Tongue_Release;
         IL.Player.Tongue.Shoot += Tongue_Shoot;
+    }
+
+    public static bool Player_SaintTongueCheck(On.Player.orig_SaintTongueCheck orig, Player self)
+    {
+        bool val = orig(self);
+        if (sproutcat == self.SlugCatClass)
+        {
+            return self.Consious && self.tongue.mode == Player.Tongue.Mode.Retracted
+                && self.bodyMode != Player.BodyModeIndex.CorridorClimb && !self.corridorDrop
+                && self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut
+                && self.bodyMode != Player.BodyModeIndex.WallClimb && self.bodyMode != Player.BodyModeIndex.Swimming
+                && self.animation != Player.AnimationIndex.VineGrab && self.animation != Player.AnimationIndex.ZeroGPoleGrab;
+        }
+        return val;
     }
 
     #region sfx

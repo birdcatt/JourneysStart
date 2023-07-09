@@ -27,6 +27,7 @@ public class SeedSpitup
             && null == self.objectInStomach
             && -1 != self.FreeHand();
     }
+
     #region oatmealine's regurgitation code from modding academy (thanks a lot!)
     public static void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
     {

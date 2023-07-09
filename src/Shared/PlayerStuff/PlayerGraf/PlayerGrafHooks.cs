@@ -6,9 +6,9 @@ using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using static JourneysStart.Outgrowth.PlayerStuff.OutgrowthData;
 using Vector2 = UnityEngine.Vector2;
-using static JourneysStart.Shared.PlayerStuff.PlayerGrafMethods;
+using static JourneysStart.Shared.PlayerStuff.PlayerGraf.PlayerGrafMethods;
 
-namespace JourneysStart.Shared.PlayerStuff;
+namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
 public class PlayerGrafHooks
 {
@@ -82,6 +82,7 @@ public class PlayerGrafHooks
             }
         }
     }
+
     #region sleaser stuff
     public static void PlayerGraphics_InitiateSprites(ILContext il)
     {
@@ -104,8 +105,8 @@ public class PlayerGrafHooks
 
                 if (pData.IsLightpup)
                 {
+                    pData.Lightpup.stripeIndex = sLeaser.sprites.Length;
                     Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 1);
-                    pData.Lightpup.stripeIndex = sLeaser.sprites.Length - 1;
                     sLeaser.sprites[pData.Lightpup.stripeIndex] = new FSprite("lightpup_bodystripes", true);
                 }
                 else if (pData.IsSproutcat)
@@ -200,6 +201,14 @@ public class PlayerGrafHooks
                 if (Plugin.SkinnyScale_Index1.TryGet(self.player, out float scale1) && sLeaser.sprites[1].scale != scale1
                     && Plugin.StripeScale.TryGet(self.player, out float stripeScale))
                 {
+                    ////hes going ROUND
+                    //float bodyXYRatio = 14f / 19f; //i think its the body, not hips sprite, that i got this from
+                    //sLeaser.sprites[0].scale = Mathf.Max(sLeaser.sprites[0].scaleX, sLeaser.sprites[0].scaleY);
+                    //sLeaser.sprites[1].scale = Mathf.Max(sLeaser.sprites[1].scaleX, sLeaser.sprites[1].scaleY);
+                    //sLeaser.sprites[0].scale *= bodyXYRatio;
+                    //sLeaser.sprites[1].scale *= bodyXYRatio;
+                    ////OH MY GOD HES SO SKINNY
+
                     int stripeIndex = playerData.Lightpup.stripeIndex;
                     float scaleRatioX = sLeaser.sprites[1].scaleX / scale1;
                     float scaleRatioY = sLeaser.sprites[1].scaleY / scale1;

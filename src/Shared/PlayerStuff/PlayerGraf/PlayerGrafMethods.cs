@@ -5,7 +5,7 @@ using static JourneysStart.Outgrowth.PlayerStuff.OutgrowthData;
 using RWCustom;
 using Colour = UnityEngine.Color;
 
-namespace JourneysStart.Shared.PlayerStuff;
+namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
 public static class PlayerGrafMethods
 {

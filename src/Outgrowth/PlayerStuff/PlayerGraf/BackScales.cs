@@ -4,6 +4,7 @@ namespace JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
 
 public class BackScales
 {
+    //note: look at SpineSpikes
     public WeakReference<Player> playerRef;
 
     public const string spriteName = "LizardScaleA0";

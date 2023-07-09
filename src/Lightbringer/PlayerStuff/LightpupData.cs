@@ -1,6 +1,6 @@
 ﻿using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
-using KeyCode = UnityEngine.KeyCode;
-using Input = UnityEngine.Input;
+//using KeyCode = UnityEngine.KeyCode;
+//using Input = UnityEngine.Input;
 using Vector2 = UnityEngine.Vector2;
 using Random = UnityEngine.Random;
 using Debug = UnityEngine.Debug;
@@ -21,7 +21,9 @@ sealed class LightpupData
     public int flareCooldown;
     public int flareCharge;
     public const int flareChargeMax = 4;
-    public readonly KeyCode flareInput;
+    //public readonly KeyCode flareInput;
+    public int flareWindup;
+    public const int flareWindupMax = 2 * 40;
 
     public int idleLookCounter;
     public Vector2 idlePoint;
@@ -37,13 +39,13 @@ sealed class LightpupData
 
         flareCooldown = 0;
         flareCharge = flareChargeMax;
-        flareInput = player.playerState.playerNumber switch
-        {
-            1 => ConfigMenu.p2FlareKey.Value,
-            2 => ConfigMenu.p3FlareKey.Value,
-            3 => ConfigMenu.p4FlareKey.Value,
-            _ => ConfigMenu.p1FlareKey.Value //default
-        };
+        //flareInput = player.playerState.playerNumber switch
+        //{
+        //    1 => ConfigMenu.p2FlareKey.Value,
+        //    2 => ConfigMenu.p3FlareKey.Value,
+        //    3 => ConfigMenu.p4FlareKey.Value,
+        //    _ => ConfigMenu.p1FlareKey.Value //default
+        //};
 
         idleLookCounter = 0;
         idlePoint = player.firstChunk.pos;
@@ -58,8 +60,8 @@ sealed class LightpupData
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return;
 
-        if (flareChargeMax > flareCharge)
-            playerData.tailPattern.RecolourUVMapTail(); //so the colours arent wrong after going thru pipes/hypothermia
+        //if (flareChargeMax > flareCharge)
+        //    playerData.tailPattern.RecolourUVMapTail(); //so the colours arent wrong after going thru pipes/hypothermia
 
         if (player.dead)
             return;
@@ -71,17 +73,30 @@ sealed class LightpupData
 
     public void SpawnFlare()
     {
+        if (!playerData.playerRef.TryGetTarget(out Player player))
+            return;
+
         if (0 == flareCharge || flareCooldown --> 0)
             return;
 
-        if (!Input.GetKey(flareInput)) //check other inputs too, so cant do this while eating or sleeping
+        //if (!Input.GetKey(flareInput)) //check other inputs too, so cant do this while eating or sleeping
+        //    return;
+
+        if (!Plugin.FlareKeybind.CheckRawPressed(player.playerState.playerNumber))
             return;
 
+        if (flareWindup < flareWindupMax)
+        {
+            flareWindup++;
+            //do >-< face, sprite replacement
+            player.Blink(20);
+            return;
+        }
+
+        flareWindup = 0;
         RemoveFlareCharge();
+        flareCooldown = ConfigMenu.flareCooldown.Value * 40; //update runs 40 times a second, default is 3 * 40
 
-        flareCooldown = ConfigMenu.flareCooldown.Value * 40; //update runs 40 times a second
-
-        playerData.playerRef.TryGetTarget(out Player player);
         Room room = player.room;
         AbstractConsumable flareBomb = new(room.world, AbstractObjectType.FlareBomb, null, room.GetWorldCoordinate(player.bodyChunks[1].pos), room.game.GetNewID(), -1, -1, null);
         Flare flare = new(player, flareBomb);
@@ -89,11 +104,14 @@ sealed class LightpupData
         room.abstractRoom.AddEntity(flare.abstractPhysicalObject);
         flare.abstractPhysicalObject.RealizeInRoom();
         flare.StartBurn();
+
+        player.room.PlaySound(SoundID.Death_Lightning_Spark_Spontaneous, player.firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
     }
 
     public void IdleLook()
     {
-        playerData.playerRef.TryGetTarget(out Player player);
+        if (!playerData.playerRef.TryGetTarget(out Player player))
+            return;
 
         if (!(Plugin.IdleLookWaitInput.TryGet(player, out int value) && Plugin.IdleLookWaitRandomRange.TryGet(player, out int[] randRange)
             && Plugin.IdleLookVectorRange.TryGet(player, out int[] vec) && Plugin.IdleLookPointChangeTime.TryGet(player, out int time)))

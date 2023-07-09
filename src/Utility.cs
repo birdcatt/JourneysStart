@@ -71,34 +71,6 @@ namespace JourneysStart
         }
         #endregion
 
-        #region outgrowth
-        public static bool EdibleIsBug(IPlayerEdible eatenobject)
-        {
-            return eatenobject is Fly || eatenobject is SmallNeedleWorm || eatenobject is VultureGrub || eatenobject is Centipede;
-        }
-        #endregion
-
-        #region lightpup
-        public static bool CreatureIsRot(CreatureTemplate.Type critType)
-        {
-            return CreatureTemplate.Type.DaddyLongLegs == critType || CreatureTemplate.Type.BrotherLongLegs == critType || ModManager.MSC && CreatureTemplateType.TerrorLongLegs == critType;
-        }
-
-        public static void SetChargeDependantElectricColour(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, int index, int electricCharge)
-        {
-            //using FSprite instead of SpriteLeaser and index doesn't work for electric spears
-            if (3 < electricCharge || electricCharge < 0) //3 should be the max charge
-                return;
-
-            sLeaser.sprites[index].color = Colour.Lerp(sLeaser.sprites[index].color, rCam.currentPalette.blackColor, 0.33f * (3 - electricCharge));
-
-            if (0 == electricCharge)
-                return;
-
-            Colour myDude = sLeaser.sprites[index].color;
-            sLeaser.sprites[index].color = new Colour(myDude.r, myDude.g, myDude.b + 0.1f); //more blue
-        }
-
         #region crafting
         public static void SpawnItem(Room room, AbstractPhysicalObject item)
         {
@@ -131,6 +103,36 @@ namespace JourneysStart
             }
         }
         #endregion
+
+        #region items
+        public static void SetChargeDependantElectricColour(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, int index, int electricCharge)
+        {
+            //using FSprite instead of SpriteLeaser and index doesn't work for electric spears
+            if (3 < electricCharge || electricCharge < 0) //3 should be the max charge
+                return;
+
+            sLeaser.sprites[index].color = Colour.Lerp(sLeaser.sprites[index].color, rCam.currentPalette.blackColor, 0.33f * (3 - electricCharge));
+
+            if (0 == electricCharge)
+                return;
+
+            Colour myDude = sLeaser.sprites[index].color;
+            sLeaser.sprites[index].color = new Colour(myDude.r, myDude.g, myDude.b + 0.1f); //more blue
+        }
+        #endregion
+
+        #region outgrowth
+        public static bool EdibleIsBug(IPlayerEdible eatenobject)
+        {
+            return eatenobject is Fly || eatenobject is SmallNeedleWorm || eatenobject is VultureGrub || eatenobject is Centipede;
+        }
+        #endregion
+
+        #region lightpup
+        public static bool CreatureIsRot(CreatureTemplate.Type critType)
+        {
+            return CreatureTemplate.Type.DaddyLongLegs == critType || CreatureTemplate.Type.BrotherLongLegs == critType || ModManager.MSC && CreatureTemplateType.TerrorLongLegs == critType;
+        }
 
         #region item checks
         public static bool GraspIsTaserWithCharge(Creature.Grasp obj)

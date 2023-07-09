@@ -74,6 +74,8 @@ public class HooksTaser
 
     public static int ScavengerAI_WeaponScore(On.ScavengerAI.orig_WeaponScore orig, ScavengerAI self, PhysicalObject obj, bool pickupDropInsteadOfWeaponSelection)
     {
+        int val = orig(self, obj, pickupDropInsteadOfWeaponSelection);
+
         if (obj is Taser t)
         {
             if (t.AbstractTaser.electricCharge > 0)
@@ -99,11 +101,13 @@ public class HooksTaser
             }
             return 2;
         }
-        return orig(self, obj, pickupDropInsteadOfWeaponSelection);
+        return val;
     }
 
     public static int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
     {
+        int val = orig(self, obj, weaponFiltered);
+
         if (obj is Taser taser)
         {
             //from orig
@@ -139,6 +143,6 @@ public class HooksTaser
             return 1;
         }
 
-        return orig(self, obj, weaponFiltered);
+        return val;
     }
 }

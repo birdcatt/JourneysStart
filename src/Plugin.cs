@@ -1,10 +1,15 @@
-﻿using System.Runtime.CompilerServices; //CWT
-using BepInEx;
-using SlugBase.Features;
-using static SlugBase.Features.FeatureTypes;
-using Debug = UnityEngine.Debug;
+﻿using BepInEx;
+using System.Runtime.CompilerServices; //CWT
 using System.Linq; //for ModManager.ActiveMods.Any
 using Exception = System.Exception;
+
+using Debug = UnityEngine.Debug;
+using Texture2D = UnityEngine.Texture2D;
+using KeyCode = UnityEngine.KeyCode;
+
+using SlugBase.Features;
+using static SlugBase.Features.FeatureTypes;
+using ImprovedInput;
 
 using JourneysStart.Shared;
 using JourneysStart.Lightbringer;
@@ -12,15 +17,16 @@ using JourneysStart.Outgrowth;
 using JourneysStart.FisobsItems;
 using JourneysStart.FisobsItems.Seed;
 using JourneysStart.FisobsItems.Taser;
-using JourneysStart.Shared.PlayerStuff;
+using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 using PlayerData = JourneysStart.Shared.PlayerStuff.PlayerData;
-using Texture2D = UnityEngine.Texture2D;
 
 namespace JourneysStart
 {
     [BepInPlugin(MOD_ID, MOD_NAME, MOD_VERSION)]
     class Plugin : BaseUnityPlugin
     {
+        public static new BepInEx.Logging.ManualLogSource Logger; //hiding BaseUnityPlugin.Logger
+
         public const string MOD_ID = "bluecubism.journeysstart";
         public const string MOD_NAME = "Journey's Start";
         public const string MOD_VERSION = "0.1.0";
@@ -31,6 +37,9 @@ namespace JourneysStart
 
         public static Texture2D LightpupTailTexture;
         public static Texture2D SproutcatTailTexture;
+
+        public static readonly PlayerKeybind FlareKeybind = PlayerKeybind.Register("JourneysStart:LightpupFlare", MOD_NAME, "Flare",
+            KeyCode.LeftControl, KeyCode.Joystick1Button4);
 
         #region sfx
         public static SoundID sproutcat_bush_rustle1;
@@ -72,6 +81,8 @@ namespace JourneysStart
         // Add hooks
         public void OnEnable()
         {
+            FlareKeybind.Description = "The key held to have the Lightbringer emit an bright, electric glow to stun all near him.";
+
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             Hook();
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
@@ -97,12 +108,8 @@ namespace JourneysStart
 
             PlayerGrafMethods.TailTextureFilePath(ref LightpupTailTexture, "lightpup_tailstripes");
             PlayerGrafMethods.TailTextureFilePath(ref SproutcatTailTexture, "sproutcat_tailtexture");
-            On.Player.ctor += Player_ctor;
-            PlayerGrafHooks.Hook();
-
-            On.Player.Update += Player_Update; //i think this has to be here because it uses the graf variables
-            //i still honestly dont know. can i put it back in OnEnable? probably
         }
+
         #region
         public void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
         {
@@ -138,6 +145,9 @@ namespace JourneysStart
                     if (MultiplayerUnlocks.CreatureUnlockList.Contains(TaserFisob.ArenaTaser))
                         MultiplayerUnlocks.CreatureUnlockList.Remove(TaserFisob.ArenaTaser);
 
+                    if (MultiplayerUnlocks.CreatureUnlockList.Contains(SeedFisob.ArenaSeed))
+                        MultiplayerUnlocks.CreatureUnlockList.Remove(SeedFisob.ArenaSeed);
+
                     if (Futile.atlasManager.DoesContainAtlas("journeysstart_assets"))
                         Futile.atlasManager.UnloadAtlas("journeysstart_assets");
                 }
@@ -155,35 +165,6 @@ namespace JourneysStart
             LightpupGeneral.Hook();
             OutgrowthGeneral.Hook();
             SharedGeneral.Hook();
-        }
-
-        public static void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
-        {
-            orig(self, abstractCreature, world);
-
-            SlugcatStats.Name name = self.slugcatStats.name;
-            if (Utility.IsModcat(name))
-            {
-                if (!PlayerDataCWT.TryGetValue(self, out _))
-                    PlayerDataCWT.Add(self, new PlayerData(self));
-
-                if (lghtbrpup == name)
-                {
-                    self.setPupStatus(true); //thanks oatmealine
-                }
-                else if (sproutcat == name)
-                {
-                    self.tongue = new Player.Tongue(self, 0); //2nd arg is index
-                }
-            }
-        }
-        public static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
-        {
-            orig(self, eu);
-            if (self.room != null && PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
-            {
-                playerData.Update();
-            }
         }
     }
 }

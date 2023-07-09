@@ -13,7 +13,7 @@ namespace JourneysStart.Shared.ArtOnScreen
     public class CutscenesSlideshows
     {
         public static SlideShowID LightpupIntroSlideShow = new("LightpupIntroSlideShow", true);
-        public static SlideShowID LightpupOutroVoidSeaSlideShow = new("LightpupIntroSlideShow", true);
+        public static SlideShowID LightpupOutroVoidSeaSlideShow = new("LightpupOutroVoidSeaSlideShow", true);
 
         public static SceneID LightpupIntroSceneA = new("LightpupIntroSceneA", true);
         //public static SceneID LightpupIntroSceneB;

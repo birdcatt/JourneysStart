@@ -1,5 +1,6 @@
 ﻿using JourneysStart.Lightbringer.PlayerStuff;
 using JourneysStart.Outgrowth.PlayerStuff;
+using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 using Colour = UnityEngine.Color;
 using System;
 using Debug = UnityEngine.Debug;
@@ -8,6 +9,9 @@ namespace JourneysStart.Shared.PlayerStuff;
 
 sealed class PlayerData
 {
+    //yeah ok you dont need a WeakRef to PlayerData for either modcat data
+    //theres nothing here that really changes
+
     public WeakReference<Player> playerRef;
     public readonly bool IsLightpup;
     public readonly bool IsSproutcat;
