@@ -2,7 +2,7 @@
 using Mono.Cecil.Cil;
 using System.Linq;
 
-namespace JourneysStart.Outgrowth.PlayerStuff;
+namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
 public class WormgrassImmunity
 {

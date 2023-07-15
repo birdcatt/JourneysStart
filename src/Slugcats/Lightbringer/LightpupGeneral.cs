@@ -1,12 +1,11 @@
-﻿using JourneysStart.Lightbringer.Data;
-using SlugBase.Features;
+﻿using SlugBase.Features;
 using SlugBase;
 using System.Linq;
-using JourneysStart.Lightbringer.OracleStuff;
-using JourneysStart.Lightbringer.PlayerStuff;
 using JourneysStart.FisobsItems.Taser;
+using JourneysStart.Slugcats.Lightbringer.MiscData;
+using JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 
-namespace JourneysStart.Lightbringer
+namespace JourneysStart.Slugcats.Lightbringer
 {
     public class LightpupGeneral
     {
@@ -15,7 +14,6 @@ namespace JourneysStart.Lightbringer
             FRDData.Hook();
             Crafting.Hook();
             ElecResist.Hook();
-            PearlDialogue.Hook();
             GeneralHooks();
         }
 
@@ -23,9 +21,7 @@ namespace JourneysStart.Lightbringer
         {
             On.WorldLoader.GeneratePopulation += WorldLoader_GeneratePopulation;
 
-            On.Player.Jump += Player_Jump;
             On.Player.ThrownSpear += Player_ThrownSpear;
-            On.Player.Grabability += Player_Grabability;
             On.Player.CanBeSwallowed += Player_CanBeSwallowed;
 
             On.PlayerGraphics.LookAtObject += PlayerGraphics_LookAtObject;
@@ -36,22 +32,27 @@ namespace JourneysStart.Lightbringer
             On.RegionGate.customKarmaGateRequirements += RegionGate_customKarmaGateRequirements;
         }
 
+        public static bool IsAIRoom(string name)
+        {
+            if (name.Length < "EX_AI".Length) //EX for example
+                return false;
+
+            int len = name.Length - 1;
+
+            return name[len - 2] == '_' && name[len - 1] == 'A' && name[len] == 'I';
+        }
+
         public static void WorldLoader_GeneratePopulation(On.WorldLoader.orig_GeneratePopulation orig, WorldLoader self, bool fresh)
         {
             //disable rot spawns even on modded regions except for iterator regions
-            if (Utility.IsLightpup(self.game.StoryCharacter) && !self.abstractRooms.Any(abstrRoom => abstrRoom.name == "AI"))
+            if (Utility.IsLightpup(self.game.StoryCharacter)
+                && !self.abstractRooms.Any(abstrRoom => IsAIRoom(abstrRoom.name)))
+            {
                 self.spawners.RemoveAll(spawn => spawn is World.SimpleSpawner spawner && Utility.CreatureIsRot(StaticWorld.GetCreatureTemplate(spawner.creatureType).type));
+            }
             orig(self, fresh);
         }
 
-        public static void Player_Jump(On.Player.orig_Jump orig, Player self)
-        {
-            orig(self);
-            if (Plugin.lghtbrpup == self.slugcatStats.name)
-            {
-                self.jumpBoost *= 1f + 0.175f;
-            }
-        }
         public static void Player_ThrownSpear(On.Player.orig_ThrownSpear orig, Player self, Spear spear)
         {
             orig(self, spear);
@@ -59,11 +60,6 @@ namespace JourneysStart.Lightbringer
             {
                 spear.spearDamageBonus = (spear.spearDamageBonus + 0.8f) / 2; //1 is 0.8f, 2 is 1.25f
             }
-        }
-        public static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
-        {
-            var val = orig(self, obj);
-            return obj is Flare ? Player.ObjectGrabability.CantGrab : val;
         }
         public static bool Player_CanBeSwallowed(On.Player.orig_CanBeSwallowed orig, Player self, PhysicalObject testObj)
         {

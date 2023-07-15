@@ -5,6 +5,8 @@ using System.Linq;
 using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.Shared.ArtOnScreen;
 using JourneysStart.Shared.PlayerStuff.PlayerGraf;
+using JourneysStart.Shared.OracleStuff;
+using JourneysStart.Slugcats.Lightbringer.MiscData;
 
 namespace JourneysStart.Shared;
 
@@ -12,12 +14,15 @@ public class SharedGeneral
 {
     public static void Hook()
     {
+        CutscenesSlideshows.Hook();
+        JollySelectMenu.Hook();
+
+        OracleDialogue.Hook();
+        PearlDialogue.Hook();
+
         PlayerGrafHooks.Hook();
         Crafting.Hook();
 
-        CutscenesSlideshows.Hook();
-        JollySelectMenu.Hook();
-        OracleDialogue.Hook();
         RoomScriptHooks.Hook();
 
         GeneralHooks();
@@ -28,7 +33,10 @@ public class SharedGeneral
         On.Player.ctor += Player_ctor;
         On.Player.Update += Player_Update;
         On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+        On.Player.Jump += Player_Jump;
+        On.Player.Grabability += Player_Grabability;
 
+        On.SlugcatStats.SpearSpawnModifier += SlugcatStats_SpearSpawnModifier;
         On.SlugcatStats.SpearSpawnElectricRandomChance += SpearSpawnElectricChance;
         On.SlugcatStats.SpearSpawnExplosiveRandomChance += SpearSpawnExplosiveChance;
 
@@ -76,21 +84,61 @@ public class SharedGeneral
     }
     #endregion
 
+    public static void Player_Jump(On.Player.orig_Jump orig, Player self)
+    {
+        orig(self);
+        if (lghtbrpup == self.slugcatStats.name)
+        {
+            self.jumpBoost *= 1f + 0.175f;
+        }
+        else if (strawberry == self.slugcatStats.name)
+        {
+            if (Player.AnimationIndex.Flip == self.animation)
+                self.jumpBoost *= 1f + 0.85f;
+            else
+                self.jumpBoost *= 1f + 0.2f;
+        }
+    }
+
+    private static Player.ObjectGrabability Player_Grabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
+    {
+        var val = orig(self, obj);
+        if (obj is Flare)
+            return Player.ObjectGrabability.CantGrab;
+        if (sproutcat == self.slugcatStats.name && obj is Spear)
+            return Player.ObjectGrabability.OneHand;
+        return val;
+    }
+
     #region spear spawn chance
+    private static float SlugcatStats_SpearSpawnModifier(On.SlugcatStats.orig_SpearSpawnModifier orig, SlugcatStats.Name index, float originalSpearChance)
+    {
+        if (lghtbrpup == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
+        else if (sproutcat == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+        else if (strawberry == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
+        return orig(index, originalSpearChance);
+    }
     public static float SpearSpawnElectricChance(On.SlugcatStats.orig_SpearSpawnElectricRandomChance orig, SlugcatStats.Name index)
     {
         if (lghtbrpup == index)
-            return orig(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-        if (sproutcat == index)
-            return orig(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
+        else if (sproutcat == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+        else if (strawberry == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
         return orig(index);
     }
     public static float SpearSpawnExplosiveChance(On.SlugcatStats.orig_SpearSpawnExplosiveRandomChance orig, SlugcatStats.Name index)
     {
         if (lghtbrpup == index)
-            return orig(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-        if (sproutcat == index)
-            return orig(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
+        else if (sproutcat == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+        else if (strawberry == index)
+            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
         return orig(index);
     }
     #endregion
@@ -126,9 +174,9 @@ public class SharedGeneral
         if (PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
         {
 
-            if (playerData.IsSproutcat && Utility.EdibleIsBug(edible) && !playerData.Sproutcat.AteABugThisCycle)
+            if (playerData.IsSproutcat && Utility.EdibleIsBug(edible) && !playerData.Sproutcat.ateABugThisCycle)
             {
-                playerData.Sproutcat.AteABugThisCycle = true;
+                playerData.Sproutcat.ateABugThisCycle = true;
             }
 
             #region lightpup food rxn

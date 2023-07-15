@@ -4,8 +4,10 @@ using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
 using Mathf = UnityEngine.Mathf;
 using Custom = RWCustom.Custom;
+using System.Collections.Generic;
+using JourneysStart.FisobsItems.Taser;
 
-namespace JourneysStart.Lightbringer.Data
+namespace JourneysStart.Slugcats.Lightbringer.MiscData
 {
     public class Flare : FlareBomb
     {
@@ -26,39 +28,62 @@ namespace JourneysStart.Lightbringer.Data
             base.Update(eu);
             firstChunk.pos = player.bodyChunks[1].pos;
 
-            foreach (AbstractCreature crit in room.abstractRoom.creatures)
+            int timesRechargedObj = 0;
+
+            foreach (List<PhysicalObject> objList in room.physicalObjects)
             {
-                if (crit == null || crit.realizedCreature == null)
-                    continue;
-
-                if (crit.realizedCreature == player)
-                    continue;
-
-                if (crit.realizedCreature is Player && !Custom.rainWorld.options.friendlyFire)
-                    continue;
-
-                if (!(Custom.DistLess(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos, LightIntensity * 600f)
-                    || (Custom.DistLess(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos, LightIntensity * 1600f)
-                    && room.VisualContact(firstChunk.pos, crit.realizedCreature.mainBodyChunk.pos))))
+                foreach (PhysicalObject obj in objList)
                 {
-                    continue;
-                }
+                    if (obj?.firstChunk == null)
+                        continue;
 
-                if (crit.realizedCreature.grasps != null)
-                {
-                    for (int i = 0; i < crit.realizedCreature.grasps.Length; i++)
+                    if (!(Custom.DistLess(firstChunk.pos, obj.firstChunk.pos, LightIntensity * 600f)
+                        || Custom.DistLess(firstChunk.pos, obj.firstChunk.pos, LightIntensity * 1600f)
+                        && room.VisualContact(firstChunk.pos, obj.firstChunk.pos)))
                     {
-                        if (crit.realizedCreature.grasps[i]?.grabbed is Player playerBeingHeld && playerBeingHeld == player)
+                        continue;
+                    }
+
+                    if (obj is Spear spear && spear.abstractSpear.electric && spear.abstractSpear.electricCharge < 3)
+                    {
+                        timesRechargedObj++;
+                        spear.abstractSpear.electricCharge = 3;
+                    }
+                    else if (obj is Taser taser && taser.AbstractTaser.electricCharge < 3)
+                    {
+                        timesRechargedObj++;
+                        taser.AbstractTaser.electricCharge = 3;
+                    }
+                    else if (obj is Creature crit)
+                    {
+                        if (crit == null || crit == player)
+                            continue;
+
+                        if (crit is Player && !Custom.rainWorld.options.friendlyFire)
+                            continue;
+
+                        if (crit.grasps != null)
                         {
-                            crit.realizedCreature.ReleaseGrasp(i); //drop player
-                            player.room.AddObject(new CreatureSpasmer(crit.realizedCreature, false, 40));
-                            break;
+                            for (int i = 0; i < crit.grasps.Length; i++)
+                            {
+                                if (crit.grasps[i] == null)
+                                    continue;
+                                crit.ReleaseGrasp(i);
+                                if (crit.grasps[i].grabbed is Player playerBeingHeld && playerBeingHeld == player)
+                                {
+                                    room.AddObject(new CreatureSpasmer(crit, false, 40));
+                                    break;
+                                }
+                            }
                         }
+
+                        crit.Stun(Random.Range(20, 40));
                     }
                 }
-
-                crit.realizedCreature.Stun(Random.Range(20, 30));
             }
+
+            if (timesRechargedObj > 0)
+                room.PlaySound(SoundID.Zapper_Zap, firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
         }
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
@@ -94,11 +119,11 @@ namespace JourneysStart.Lightbringer.Data
             for (int i = 0; i < flicker.GetLength(0); i++)
             {
                 flicker[i, 1] = flicker[i, 0];
-                flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * ((Random.value < 0.5f) ? -1f : 1f);
+                flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * (Random.value < 0.5f ? -1f : 1f);
                 flicker[i, 0] = Custom.LerpAndTick(flicker[i, 0], flicker[i, 2], 0.05f, 0.033333335f);
                 if (Random.value < 0.2f)
                 {
-                    flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * ((Random.value < 0.5f) ? -1f : 1f);
+                    flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * (Random.value < 0.5f ? -1f : 1f);
                 }
                 flicker[i, 2] = Mathf.Lerp(flicker[i, 2], 1f, 0.01f);
             }
@@ -122,7 +147,7 @@ namespace JourneysStart.Lightbringer.Data
             }
         }
         public Room loadedRoom { get { return room; } }
-        public float warmth { get { return RainWorldGame.DefaultHeatSourceWarmth - (RainWorldGame.DefaultHeatSourceWarmth * 0.1f); } }
+        public float warmth { get { return RainWorldGame.DefaultHeatSourceWarmth - RainWorldGame.DefaultHeatSourceWarmth * 0.1f; } }
         public float range { get { return 150f; } }
         public Vector2 Position() { return firstChunk.pos; }
     }

@@ -9,7 +9,7 @@ using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.FisobsItems.Taser;
 
 //this is quite painful by itself so lightbringer gets its own separate crafting cs file
-namespace JourneysStart.Lightbringer.PlayerStuff
+namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff
 {
     public static class Crafting
     {
@@ -37,14 +37,17 @@ namespace JourneysStart.Lightbringer.PlayerStuff
         }
         public static bool CraftWillFail(this Player self)
         {
-            if (self.FoodInStomach <= 0) //needs at least 1 pip to fail and spark
-                return false;
+            //if (self.FoodInStomach <= 0) //needs at least 1 pip to fail and spark
+            //    return false;
 
             if (!self.GraspsCanBeCrafted()) //should return false is grasp is null
                 return false;
 
             Creature.Grasp graspA = self.grasps[0];
             Creature.Grasp graspB = self.grasps[1];
+
+            if (graspA.grabbed is Rock || graspB.grabbed is Rock)
+                return false;
 
             if (GraspIsTaserWithCharge(graspA) && GraspIsTaserWithCharge(graspB))
                 return true;
@@ -233,14 +236,14 @@ namespace JourneysStart.Lightbringer.PlayerStuff
             }
             else //grasps are not electric spear and taser
             {
-                if (0 == self.FoodInStomach)
-                {
-                    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Not enough food in stomach");
-                    self.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, self.firstChunk.pos);
-                    if (self.room.game.IsStorySession)
-                        self.showKarmaFoodRainTime = 10;
-                    return true;
-                }
+                //if (0 == self.FoodInStomach)
+                //{
+                //    Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Not enough food in stomach");
+                //    self.room.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A, self.firstChunk.pos);
+                //    if (self.room.game.IsStorySession)
+                //        self.showKarmaFoodRainTime = 10;
+                //    return true;
+                //}
 
                 AddCraftingLight(self, 80f);
                 AddCraftingSpark(self);
@@ -255,7 +258,7 @@ namespace JourneysStart.Lightbringer.PlayerStuff
                 }
 
                 self.room.PlaySound(SoundID.Zapper_Zap, self.firstChunk.pos, 1f, 1.5f + Random.value * 1.5f);
-                self.SubtractFood(1);
+                //self.SubtractFood(1);
 
                 if (item is AbstractSpear craftedSpear)
                 {
@@ -308,11 +311,9 @@ namespace JourneysStart.Lightbringer.PlayerStuff
 
     public static class CraftingLibrary
     {
-        public static Dictionary<(AbstractObjectType, AbstractObjectType), AbstractObjectType> craftingTable;
+        public static Dictionary<(AbstractObjectType, AbstractObjectType), AbstractObjectType> craftingTable = new();
         static CraftingLibrary()
         {
-            craftingTable = new();
-
             AddRecipe(AbstractObjectType.Rock, AbstractObjectType.DangleFruit, AbstractObjectType.FlareBomb);
             AddRecipe(AbstractObjectType.Rock, AbstractObjectType.SlimeMold, AbstractObjectType.Lantern);
             AddRecipe(AbstractObjectType.Rock, AbstractObjectType.Lantern, AbstractObjectType.FlareBomb);
@@ -449,6 +450,9 @@ namespace JourneysStart.Lightbringer.PlayerStuff
 
             if (MSC_AbstractObjectType.JokeRifle == item)
                 return new JokeRifle.AbstractRifle(world, null, pos, id, JokeRifle.AbstractRifle.AmmoType.Rock);
+
+            if (MSC_AbstractObjectType.FireEgg == item)
+                return new FireEgg.AbstractBugEgg(self.room.world, null, self.abstractCreature.pos, id, Random.value * 255);
 
             return new AbstractPhysicalObject(world, item, null, pos, id);
         }

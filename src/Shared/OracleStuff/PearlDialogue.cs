@@ -2,9 +2,9 @@
 using DataPearlType = DataPearl.AbstractDataPearl.DataPearlType;
 using static SLOracleBehaviorHasMark;
 using static JourneysStart.Utility;
-using static JourneysStart.Lightbringer.Data.FRDData;
+using static JourneysStart.Slugcats.Lightbringer.MiscData.FRDData;
 
-namespace JourneysStart.Lightbringer.OracleStuff
+namespace JourneysStart.Shared.OracleStuff
 {
     public class PearlDialogue
     {
@@ -16,7 +16,8 @@ namespace JourneysStart.Lightbringer.OracleStuff
 
         public static Conversation.ID Conversation_DataPearlToConversation(On.Conversation.orig_DataPearlToConversation orig, DataPearlType type)
         {
-            return LightpupPearl == type ? LightpupPearlConvoID : orig(type);
+            var val = orig(type);
+            return LightpupPearl == type ? LightpupPearlConvoID : val;
         }
         public static void MoonConversation_AddEvents(On.SLOracleBehaviorHasMark.MoonConversation.orig_AddEvents orig, MoonConversation self)
         {
@@ -48,7 +49,7 @@ namespace JourneysStart.Lightbringer.OracleStuff
                     self.AddMessage(startingText + "It's a surprise to see how far the rain can wash things away.", textLinger: 10);
                 }
 
-                PlayPearlDialogue:
+            PlayPearlDialogue:
                 self.LoadEventsFromFile(LightpupPearl.value);
 
                 bool hasNotReadPearl = 0 == self.myBehavior.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SLOracleState.playerEncountersWithMark; //hijacking this for this purpose

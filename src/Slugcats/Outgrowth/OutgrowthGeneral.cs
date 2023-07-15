@@ -2,12 +2,13 @@
 using System.Reflection;
 //using MonoMod.Cil;
 //using Mono.Cecil.Cil;
-using JourneysStart.Outgrowth.Food;
-using JourneysStart.Outgrowth.PlayerStuff;
-using JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
 using Debug = UnityEngine.Debug;
+using static JourneysStart.SaveDataInfo;
+using JourneysStart.Slugcats.Outgrowth.Food;
+using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
+using JourneysStart.Slugcats.Outgrowth.Rope;
 
-namespace JourneysStart.Outgrowth
+namespace JourneysStart.Slugcats.Outgrowth
 {
     public class OutgrowthGeneral
     {
@@ -16,11 +17,12 @@ namespace JourneysStart.Outgrowth
             Diet.Hook();
             SeedSpitup.Hook();
 
-            RopeHooks.Hook();
-
             WormgrassImmunity.Hook();
             Crafting.Hook();
-            
+
+            RopeHooks.Hook();
+            VineCombat.Hook();
+
             GeneralHooks();
         }
         public static void GeneralHooks()
@@ -36,7 +38,7 @@ namespace JourneysStart.Outgrowth
         {
             bool val = orig(self);
             if (ModManager.MSC && self.room.game.IsStorySession && Utility.IsSproutcat(self.room.game.StoryCharacter)
-                && self.karmaRequirements[(!self.letThroughDir) ? 1 : 0] == MoreSlugcats.MoreSlugcatsEnums.GateRequirement.RoboLock
+                && self.karmaRequirements[!self.letThroughDir ? 1 : 0] == MoreSlugcats.MoreSlugcatsEnums.GateRequirement.RoboLock
                 && "UW" == self.room.world.region.name && self.room.abstractRoom.name.Contains("LC")
                 && self.room.game.GetStorySession.saveState.hasRobo)
             {
@@ -44,12 +46,10 @@ namespace JourneysStart.Outgrowth
             }
             return val;
         }
-
         public static void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
         {
-            if (Plugin.sproutcat == self.slugcatStats.name && self.grasps[grasp].grabbed is Spear)
+            if (self.grasps[grasp]?.grabbed is Spear && Plugin.sproutcat == self.slugcatStats.name)
             {
-                //Debug.Log($"{Plugin.MOD_NAME}: Toss spear");
                 self.TossObject(grasp, eu);
                 self.ReleaseGrasp(grasp);
                 //returns in orig since grasp is null now

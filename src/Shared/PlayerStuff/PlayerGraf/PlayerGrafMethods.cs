@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
-using static JourneysStart.Outgrowth.PlayerStuff.OutgrowthData;
+using static JourneysStart.Slugcats.Outgrowth.PlayerStuff.OutgrowthData;
 using RWCustom;
 using Colour = UnityEngine.Color;
+using JourneysStart.Slugcats.Outgrowth.Rope;
 
 namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
@@ -153,7 +154,7 @@ public static class PlayerGrafMethods
                 (sLeaser.sprites[ropeIndex] as TriangleMesh).MoveVertice((k - 1) * 4 + 3, vector12 - camPos);
                 vector = vector2;
             }
-            if (self.player.tongue.Free || self.player.tongue.Attached)
+            if (self.player.tongue.Free || self.player.tongue.Attached || self.player.tongue.mode == VineCombat.CombatShootingOut)
             {
                 sLeaser.sprites[ropeIndex].isVisible = true;
             }

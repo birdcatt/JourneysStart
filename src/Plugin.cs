@@ -12,13 +12,14 @@ using static SlugBase.Features.FeatureTypes;
 using ImprovedInput;
 
 using JourneysStart.Shared;
-using JourneysStart.Lightbringer;
-using JourneysStart.Outgrowth;
 using JourneysStart.FisobsItems;
 using JourneysStart.FisobsItems.Seed;
 using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 using PlayerData = JourneysStart.Shared.PlayerStuff.PlayerData;
+using JourneysStart.Slugcats.Lightbringer;
+using JourneysStart.Slugcats.Strawberry;
+using JourneysStart.Slugcats.Outgrowth;
 
 namespace JourneysStart
 {
@@ -33,10 +34,12 @@ namespace JourneysStart
 
         public static readonly SlugcatStats.Name lghtbrpup = new("Lightbringer");
         public static readonly SlugcatStats.Name sproutcat = new("sproutcat");
+        public static readonly SlugcatStats.Name strawberry = new("Strawberry");
         public static ConditionalWeakTable<Player, PlayerData> PlayerDataCWT = new();
 
         public static Texture2D LightpupTailTexture;
         public static Texture2D SproutcatTailTexture;
+        public static Texture2D StrawberryTailTexture;
 
         public static readonly PlayerKeybind FlareKeybind = PlayerKeybind.Register("JourneysStart:LightpupFlare", MOD_NAME, "Flare",
             KeyCode.LeftControl, KeyCode.Joystick1Button4);
@@ -81,6 +84,8 @@ namespace JourneysStart
         // Add hooks
         public void OnEnable()
         {
+            Logger = base.Logger;
+
             FlareKeybind.Description = "The key held to have the Lightbringer emit an bright, electric glow to stun all near him.";
 
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
@@ -108,6 +113,7 @@ namespace JourneysStart
 
             PlayerGrafMethods.TailTextureFilePath(ref LightpupTailTexture, "lightpup_tailstripes");
             PlayerGrafMethods.TailTextureFilePath(ref SproutcatTailTexture, "sproutcat_tailtexture");
+            PlayerGrafMethods.TailTextureFilePath(ref StrawberryTailTexture, "strawberry_tailtexture");
         }
 
         #region
@@ -120,8 +126,7 @@ namespace JourneysStart
                 if (isPostInit) return;
                 isPostInit = true;
 
-                if (ModManager.ActiveMods.Any(mod => mod.id == "dressmyslugcat"))
-                    ModEnabled_DressMySlugcat = true;
+                ModEnabled_DressMySlugcat = ModManager.ActiveMods.Any(mod => mod.id == "dressmyslugcat");
             }
             catch (Exception e)
             {
@@ -164,6 +169,7 @@ namespace JourneysStart
             FisobsGeneral.Hook();
             LightpupGeneral.Hook();
             OutgrowthGeneral.Hook();
+            StrawberryGeneral.Hook();
             SharedGeneral.Hook();
         }
     }

@@ -2,6 +2,8 @@
 using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
+using ColorUtility = UnityEngine.ColorUtility;
+using Colour = UnityEngine.Color;
 
 namespace JourneysStart.FisobsItems.Seed;
 
@@ -24,7 +26,12 @@ public class SeedFisob : Fisob
 
     public override AbstractPhysicalObject Parse(World world, EntitySaveData saveData, SandboxUnlock unlock)
     {
-        return new SeedAbstract(world, saveData.Pos, saveData.ID);
+        string[] p = saveData.CustomData.Split(';');
+
+        Colour baseCol = ColorUtility.TryParseHtmlString(p[0], out var b) ? b : Colour.white;
+        Colour seedCol = ColorUtility.TryParseHtmlString(p[1], out var s) ? s : Colour.gray;
+
+        return new SeedAbstract(world, saveData.Pos, saveData.ID, baseCol, seedCol);
     }
 
     private static readonly SeedProperties properties = new();

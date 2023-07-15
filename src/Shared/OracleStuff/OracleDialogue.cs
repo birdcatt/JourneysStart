@@ -3,12 +3,12 @@ using static SSOracleBehavior;
 using SSOracleBehaviorAction = MoreSlugcats.MoreSlugcatsEnums.SSOracleBehaviorAction;
 using Action = SSOracleBehavior.Action;
 using static JourneysStart.Utility;
-using static JourneysStart.Lightbringer.Data.FRDData;
+using static JourneysStart.Slugcats.Lightbringer.MiscData.FRDData;
 using static MoreSlugcats.MoreSlugcatsEnums;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 
-namespace JourneysStart.Shared
+namespace JourneysStart.Shared.OracleStuff
 {
     public class OracleDialogue
     {

@@ -3,7 +3,7 @@ using Mono.Cecil.Cil;
 using static JourneysStart.Plugin;
 using Debug = UnityEngine.Debug;
 
-namespace JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
+namespace JourneysStart.Slugcats.Outgrowth.Rope;
 
 public class RopeHooks
 {
@@ -11,7 +11,7 @@ public class RopeHooks
     {
         On.Player.SaintTongueCheck += Player_SaintTongueCheck;
 
-        //all these IL's just for sfx
+        //all these ILs just for sfx
         IL.Player.Tongue.AttachToChunk += Tongue_AttachToChunk;
         IL.Player.Tongue.AttachToTerrain += Tongue_AttachToTerrain;
         IL.Player.Tongue.Release += Tongue_Release;

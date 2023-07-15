@@ -7,7 +7,7 @@ using MSC_AbstractObjectType = MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType
 using JourneysStart.FisobsItems.Taser;
 using static JourneysStart.Utility;
 
-namespace JourneysStart.Outgrowth.PlayerStuff;
+namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
 public static class Crafting
 {
@@ -25,7 +25,7 @@ public static class Crafting
 
             if (!c.TryGotoNext(MoveType.After, i => i.MatchCallOrCallvirt<Player>("FreeHand"), i => i.MatchLdcI4(-1), i => i.Match(OpCodes.Beq_S)))
             {
-                Plugin.Logger.LogError("Unable to find Player.FreeHand() == -1 in ILhook");
+                Plugin.Logger.LogError($"{Plugin.MOD_NAME}: Unable to find Player.FreeHand() == -1 in Player.GrabUpdate ILhook");
                 return;
             }
 
@@ -72,8 +72,10 @@ public static class Crafting
                     };
                 }
                 else if (spear.hue > 0)
-                    item = new AbstractConsumable(self.room.world, MSC_AbstractObjectType.FireEgg, null, self.abstractCreature.pos, id, -1, -1, null);
-                else //change it to be the broken spear fisob
+                {
+                    item = new MoreSlugcats.FireEgg.AbstractBugEgg(self.room.world, null, self.abstractCreature.pos, id, spear.hue);
+                }
+                else
                     item = new(self.room.world, AbstractObjectType.Rock, null, self.abstractCreature.pos, id);
 
                 if (self.room.game.session is StoryGameSession story)
@@ -85,8 +87,11 @@ public static class Crafting
                 grasp.realizedObject.RemoveFromRoom();
                 self.room.abstractRoom.RemoveEntity(grasp);
 
-                SpawnItemInHand(self, item);
+                SpawnItemInHand(self, item, i);
             }
         }
+
+        //spawn new broken spear fisob item after spawning all the new important stuff
+        //count how many times a spear got uncrafted then for loop spawn that
     }
 }

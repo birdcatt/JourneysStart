@@ -4,7 +4,7 @@ using Debug = UnityEngine.Debug;
 using Mathf = UnityEngine.Mathf;
 using Vector2 = UnityEngine.Vector2;
 
-namespace JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
+namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
 public class CheekFluff
 {
@@ -129,6 +129,7 @@ public class CheekFluff
                 xIncr -= 1.5f;
                 rotationAngle -= 45f;
                 vector.y -= 1f;
+                //vector.x += 0.5f; //idk? try ig
             }
 
             if (i % 2 != 0) //left side/blue

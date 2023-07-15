@@ -5,17 +5,17 @@ using Vector2 = UnityEngine.Vector2;
 using Random = UnityEngine.Random;
 using Debug = UnityEngine.Debug;
 using Colour = UnityEngine.Color;
-using Flare = JourneysStart.Lightbringer.Data.Flare;
+using Flare = JourneysStart.Slugcats.Lightbringer.MiscData.Flare;
 using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff;
 
-namespace JourneysStart.Lightbringer.PlayerStuff;
+namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 
 sealed class LightpupData
 {
     public PlayerData playerData;
 
-    public CustomController controller;
+    public CustomFoodController controller;
     public Crafting_SecondItem crafting_SecondItem;
 
     public int flareCooldown;
@@ -30,7 +30,8 @@ sealed class LightpupData
 
     public int stripeIndex;
 
-    public bool HitByZapcoil = false;
+    public bool hitByZapcoil = false;
+    public bool disableCustomController = false;
 
     public LightpupData(PlayerData playerData)
     {
@@ -76,20 +77,25 @@ sealed class LightpupData
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return;
 
-        if (0 == flareCharge || flareCooldown --> 0)
+        if (0 == flareCharge || flareCooldown-- > 0)
+            return;
+
+        if (player.sleepCurlUp > 0f || player.eatMeat > 0) //or eating not meat
             return;
 
         //if (!Input.GetKey(flareInput)) //check other inputs too, so cant do this while eating or sleeping
         //    return;
 
         if (!Plugin.FlareKeybind.CheckRawPressed(player.playerState.playerNumber))
+        {
+            flareWindup = 0;
             return;
+        }
 
         if (flareWindup < flareWindupMax)
         {
             flareWindup++;
-            //do >-< face, sprite replacement
-            player.Blink(20);
+            //does >-< face in DrawSprites
             return;
         }
 
@@ -149,6 +155,9 @@ sealed class LightpupData
 
     public void FoodReaction()
     {
+        if (disableCustomController)
+            return;
+
         playerData.playerRef.TryGetTarget(out Player player);
 
         if (player.room.world.game.session is ArenaGameSession arena && arena is not SandboxGameSession) //condition evaluates as intended
@@ -164,7 +173,8 @@ sealed class LightpupData
         else if (Player.BodyModeIndex.Default != player.bodyMode || player.exhausted)
             controller.likesFood = 0;
 
-        if (null != player.controller)
+        //if (null != player.controller)
+        if (player.controller is CustomFoodController)
             player.controller = null;
     }
 
@@ -213,14 +223,14 @@ sealed class LightpupData
         }
     }
 
-    public class CustomController : Player.PlayerController
+    public class CustomFoodController : Player.PlayerController
     {
         //thanks to Bro for the controller code
         //meant to override and force the player to jump
 
         public int likesFood;
         //private Player player;
-        public CustomController()
+        public CustomFoodController()
         {
             //this.player = player;
             likesFood = 0;

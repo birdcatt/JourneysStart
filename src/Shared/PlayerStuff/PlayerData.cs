@@ -1,9 +1,10 @@
-﻿using JourneysStart.Lightbringer.PlayerStuff;
-using JourneysStart.Outgrowth.PlayerStuff;
-using JourneysStart.Shared.PlayerStuff.PlayerGraf;
+﻿using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 using Colour = UnityEngine.Color;
 using System;
 using Debug = UnityEngine.Debug;
+using JourneysStart.Slugcats.Lightbringer.PlayerStuff;
+using JourneysStart.Slugcats.Strawberry;
+using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
 namespace JourneysStart.Shared.PlayerStuff;
 
@@ -13,12 +14,15 @@ sealed class PlayerData
     //theres nothing here that really changes
 
     public WeakReference<Player> playerRef;
+
+    public readonly bool IsModcat;
     public readonly bool IsLightpup;
     public readonly bool IsSproutcat;
-    public readonly bool IsModcat;
+    public readonly bool IsStrawberry;
 
     public LightpupData Lightpup;
     public OutgrowthData Sproutcat;
+    public StrawberryData Strawberry;
 
     public bool SpritesInited;
     public SlugTailTexture tailPattern;
@@ -42,6 +46,12 @@ sealed class PlayerData
             IsModcat = true;
             IsSproutcat = true;
             Sproutcat = new(this);
+        }
+        else if (Plugin.strawberry == name)
+        {
+            IsModcat = true;
+            IsStrawberry = true;
+            Strawberry = new();
         }
         else
         {

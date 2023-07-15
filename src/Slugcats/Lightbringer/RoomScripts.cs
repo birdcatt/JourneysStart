@@ -2,12 +2,12 @@
 using Vector2 = UnityEngine.Vector2;
 using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using AbstractDataPearl = DataPearl.AbstractDataPearl;
-using static JourneysStart.Lightbringer.Data.FRDData;
+using static JourneysStart.Slugcats.Lightbringer.MiscData.FRDData;
 using static JourneysStart.Utility;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace JourneysStart.Lightbringer;
+namespace JourneysStart.Slugcats.Lightbringer;
 
 public class RoomScripts
 {
@@ -126,7 +126,6 @@ public class RoomScripts
             }
 
             AbstractDataPearl porl = new(room.world, AbstractObjectType.DataPearl, null, RealizedPlayer.abstractPhysicalObject.pos, room.game.GetNewID(), -1, -1, null, LightpupPearl);
-
             if (-1 != RealizedPlayer.FreeHand())
             {
                 SpawnItemInHand(RealizedPlayer, porl);
@@ -165,11 +164,11 @@ public class RoomScripts
                         goto EndPearlWarning;
                 }
             }
-            
+
             room.game.cameras[0].hud.textPrompt.AddMessage("WARNING: You are about to leave Outer Expanse without the campaign-specific pearl.", 40, 240, false, true);
             room.game.cameras[0].hud.textPrompt.AddMessage("This pearl is required to unlock the alternate ending of The Lightbringer campaign.", 40, 240, false, true);
 
-            EndPearlWarning:
+        EndPearlWarning:
             Destroy();
         }
     }

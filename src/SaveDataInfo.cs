@@ -6,15 +6,17 @@ namespace JourneysStart;
 public static class SaveDataInfo
 {
     //MiscWorldSaveData resets on death
+    //  - just not saved on death
     //  - is per scug (will work for any scug tho)
-    //save resets on new game
+    //DeathPersistantSaveData resets on new game
+    //  -saved on death
     //MiscProgressionData resets on save slot wipe
     //  - can use to share data btwn scugs, shared savefile-wide, tracks stuff like unlocked scugs
 
     public static class Lightpup
     {
-        private const string StrProgressionUnlocked = "JourneysStart_Lightpup_ProgressionUnlocked";
-        private const string StrAltEndingAchieved = "JourneysStart_Lightpup_EndingAchieved";
+        private const string StrProgressionUnlocked = "JourneysStart_Lightpup_ProgressionUnlocked"; //use this to check if read lightpup pearl
+        private const string StrAltEndingAchieved = "JourneysStart_Lightpup_AltEndingAchieved";
 
         private const string StrAlreadyMetDM = "JourneysStart_Lightpup_AlreadyMetDM";
 
@@ -35,7 +37,7 @@ public static class SaveDataInfo
     public static class Sproutcat
     {
         private const string StrProgressionUnlocked = "JourneysStart_Sproutcat_ProgressionUnlocked";
-        private const string StrAltEndingAchieved = "JourneysStart_Sproutcat_EndingAchieved";
+        private const string StrAltEndingAchieved = "JourneysStart_Sproutcat_AltEndingAchieved";
         private const string StrInfectedCrits = "JourneysStart_Sproutcat_InfectedCrits";
 
         public static bool GetProgressionUnlocked(MiscWorldSaveData data)
@@ -51,6 +53,7 @@ public static class SaveDataInfo
             return save;
         }
 
+#if false
         public static HashSet<EntityID> GetInfectedCreatures(MiscWorldSaveData data)
         {
             if (!data.GetSlugBaseData().TryGet(StrInfectedCrits, out HashSet<EntityID> save))
@@ -71,10 +74,52 @@ public static class SaveDataInfo
             data.GetSlugBaseData().Set(StrInfectedCrits, save);
             return success;
         }
+#endif
     }
 
     public static class Strawberry
     {
+        public enum MenuArt
+        {
+            //Start, //has both
+            //None,
+
+            //FoundYellow,
+            //FoundBlue,
+            //FoundBoth,
+
+            //MidGame_FoundYellow_LostBlue,
+            //MidGame_FoundBlue_LostYellow,
+
+            //PostGame_LostYellow_HasBlue,
+            //PostGame_LostBlue_HasYellow,
+
+            //LostBoth
+
+            Start,
+            None,
+
+            FoundYellow,
+            FoundBlue,
+            FoundBoth
+        }
+
+        public enum SleepArt
+        {
+            None,
+            Yellow,
+            Blue,
+            Both
+        }
+
+        public enum AscensionArt
+        {
+            None,
+            Yellow,
+            Blue,
+            Both
+        }
+
         private const string StrYellowRetrieved = "JourneysStart_Strawberry_YellowRetrieved";
         private const string StrBlueRetrieved = "JourneysStart_Strawberry_BlueRetrieved";
 

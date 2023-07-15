@@ -5,7 +5,7 @@ using Debug = UnityEngine.Debug;
 using static JourneysStart.Utility;
 using JourneysStart.Shared.PlayerStuff;
 
-namespace JourneysStart.Outgrowth.Food;
+namespace JourneysStart.Slugcats.Outgrowth.Food;
 
 public class Diet
 {

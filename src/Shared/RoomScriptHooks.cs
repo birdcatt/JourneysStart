@@ -1,7 +1,7 @@
 ﻿using SlugBase.Features;
 using SlugBase;
-using static JourneysStart.Lightbringer.RoomScripts;
-using static JourneysStart.Outgrowth.RoomScripts;
+using static JourneysStart.Slugcats.Lightbringer.RoomScripts;
+using static JourneysStart.Slugcats.Outgrowth.RoomScripts;
 
 namespace JourneysStart.Shared
 {

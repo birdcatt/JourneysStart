@@ -8,7 +8,7 @@ using Custom = RWCustom.Custom;
 using DataPearlType = DataPearl.AbstractDataPearl.DataPearlType;
 //using System.Collections.Generic;
 
-namespace JourneysStart.Lightbringer.Data;
+namespace JourneysStart.Slugcats.Lightbringer.MiscData;
 
 public class FRDData
 {

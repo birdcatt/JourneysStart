@@ -5,7 +5,7 @@ using Colour = UnityEngine.Color;
 using Mathf = UnityEngine.Mathf;
 using Vector2 = UnityEngine.Vector2;
 using Debug = UnityEngine.Debug;
-using static JourneysStart.Lightbringer.Data.FRDData;
+using static JourneysStart.Slugcats.Lightbringer.MiscData.FRDData;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -15,6 +15,10 @@ using Random = UnityEngine.Random;
 using Exception = System.Exception;
 using static JourneysStart.Plugin;
 using JourneysStart.FisobsItems.Taser;
+using SlugBase.DataTypes;
+using SlugBase.Features;
+using SlugBase;
+using RWCustom;
 
 namespace JourneysStart
 {
@@ -23,7 +27,7 @@ namespace JourneysStart
         #region slug checks
         public static bool IsModcat(SlugcatStats.Name slugName)
         {
-            return null != slugName && (sproutcat == slugName || lghtbrpup == slugName);
+            return null != slugName && (sproutcat == slugName || lghtbrpup == slugName || strawberry == slugName);
         }
 
         public static bool IsLightpup(SlugcatStats.Name slugName)
@@ -42,6 +46,10 @@ namespace JourneysStart
         public static bool IsSproutcat(Player player)
         {
             return null != player && IsSproutcat(player.slugcatStats.name);
+        }
+        public static bool IsStrawberry(SlugcatStats.Name name)
+        {
+            return name != null && strawberry == name;
         }
         #endregion
 
@@ -88,6 +96,25 @@ namespace JourneysStart
                 self.SlugcatGrab(item.realizedObject, freeHand);
             }
         }
+        public static void SpawnItemInHand(Player self, AbstractPhysicalObject item, int index)
+        {
+            SpawnItem(self.room, item);
+
+            if (index < 0 || -1 == self.FreeHand() || index > self.grasps.Length || self.grasps[index] != null)
+            {
+                //attempt to spawn in next available free hand
+                int freeHand = self.FreeHand();
+                if (-1 != freeHand)
+                {
+                    Debug.Log($"{MOD_NAME}: Putting {item.type} in player grasp {freeHand}");
+                    self.SlugcatGrab(item.realizedObject, freeHand);
+                }
+                return;
+            }
+
+            Debug.Log($"{MOD_NAME}: Putting {item.type} in player grasp {index}");
+            self.SlugcatGrab(item.realizedObject, index);
+        }
         public static void AddCraftingLight(Player self, float duration = 200f, int lifetime = 6)
         {
             if (!ConfigMenu.removeCraftingLight.Value)
@@ -120,6 +147,53 @@ namespace JourneysStart
             sLeaser.sprites[index].color = new Colour(myDude.r, myDude.g, myDude.b + 0.1f); //more blue
         }
         #endregion
+
+        public static Colour GetSlugcatColour(Player player, int index)
+        {
+            //only works for body, eye, and unique colour
+            Colour colour = Colour.grey;
+            bool jollyDefaultColourMode = ModManager.CoopAvailable && Custom.rainWorld.options.jollyColorMode == Options.JollyColorMode.DEFAULT;
+            int playerNumber = player.room.game.session is not ArenaGameSession && (player.playerState.playerNumber == 0 || jollyDefaultColourMode) ? -1 : player.playerState.playerNumber;
+
+            if (SlugBaseCharacter.TryGet(player.slugcatStats.name, out SlugBaseCharacter charac)
+                && charac.Features.TryGet(PlayerFeatures.CustomColors, out ColorSlot[] customColours))
+            {
+                //loading default colours)
+                colour = customColours[index].GetColor(playerNumber);
+            }
+
+            if (PlayerGraphics.customColors != null && !player.IsJollyPlayer && !ModManager.JollyCoop)
+            {
+                if (PlayerGraphics.customColors.Count > index)
+                    colour = PlayerGraphics.CustomColorSafety(index);
+            }
+            else if (ModManager.CoopAvailable)
+            {
+                if (playerNumber > 0)
+                {
+                    //why is p1 null. entire reason i have to check for player and colour mode
+                    colour = PlayerGraphics.JollyColor(playerNumber, index);
+                }
+                else if (Custom.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM)
+                {
+                    //these are the jolly custom colours btw
+                    JollyCoop.JollyMenu.JollyPlayerOptions jollyPlayer = Custom.rainWorld.options.jollyPlayerOptionsArray[0];
+                    switch (index)
+                    {
+                        case 0:
+                            colour = jollyPlayer.GetBodyColor();
+                            break;
+                        case 1:
+                            colour = jollyPlayer.GetFaceColor();
+                            break;
+                        case 2:
+                            colour = jollyPlayer.GetUniqueColor();
+                            break;
+                    }
+                }
+            }
+            return colour;
+        }
 
         #region outgrowth
         public static bool EdibleIsBug(IPlayerEdible eatenobject)
@@ -160,6 +234,10 @@ namespace JourneysStart
 
         #region oracle
         #region oracle saying stuff
+        public static void AddMessage(this Conversation self, string text, int initialWait = 0, int textLinger = 0)
+        {
+            self.events.Add(new Conversation.TextEvent(self, initialWait, text, textLinger));
+        }
         public static void PlayConvo(this PebblesConversation self, string[][] convo)
         {
             for (int i = 0; i < convo.Length; i++)
@@ -179,10 +257,6 @@ namespace JourneysStart
             {
                 AddMessage(self, i, textLinger: textLinger);
             }
-        }
-        public static void AddMessage(this Conversation self, string text, int initialWait = 0, int textLinger = 0)
-        {
-            self.events.Add(new Conversation.TextEvent(self, initialWait, text, textLinger));
         }
         #endregion
 

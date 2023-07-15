@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JourneysStart.Outgrowth.PlayerStuff.PlayerGraf;
+namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
 public class BackScales
 {

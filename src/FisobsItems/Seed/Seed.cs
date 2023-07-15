@@ -1,14 +1,15 @@
 ﻿using Colour = UnityEngine.Color;
 using Vector2 = UnityEngine.Vector2;
 using Mathf = UnityEngine.Mathf;
-//using RWCustom;
+using UnityEngine;
+using RWCustom;
 //using Smoke;
 
 namespace JourneysStart.FisobsItems.Seed;
 
-public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
+public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
 {
-    public Seed(SeedAbstract abstr) : base(abstr)
+    public Seed(SeedAbstract abstr) : base(abstr, abstr.world)
     {
         bodyChunks = new BodyChunk[1];
         bodyChunks[0] = new BodyChunk(this, 0, new Vector2(0f, 0f), 5f, 0.12f);
@@ -31,7 +32,7 @@ public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
             return abstractPhysicalObject as AbstractConsumable;
         }
     }
-    public AbstractConsumable AbstrSeed
+    public SeedAbstract AbstrSeed
     {
         get
         {
@@ -43,17 +44,44 @@ public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
     public override void Update(bool eu)
     {
         base.Update(eu);
+
+        if (room.game.devToolsActive && Input.GetKey("b"))
+        {
+            firstChunk.vel += Custom.DirVec(firstChunk.pos, Futile.mousePosition) * 3f;
+        }
+
+        if (grabbedBy.Count > 0)
+        {
+            if (!AbstrConsumable.isConsumed)
+            {
+                AbstrConsumable.Consume();
+            }
+        }
+
+        if (mode == Mode.Thrown && (firstChunk.ContactPoint.x != 0 || firstChunk.ContactPoint.y != 0))
+        {
+            Explode();
+        }
     }
 
-    public virtual void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+    #region sprites
+    public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
-        sLeaser.sprites = new FSprite[3];
+        sLeaser.sprites = new FSprite[2];
         sLeaser.sprites[0] = new FSprite("JetFishEyeA", true);
-        sLeaser.sprites[1] = new FSprite("JetFishEyeA", true);
-        sLeaser.sprites[2] = new FSprite("tinyStar", true);
+        sLeaser.sprites[1] = new FSprite("tinyStar", true);
         AddToContainer(sLeaser, rCam, null);
     }
-    public virtual void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    public override void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
+    {
+        newContatiner ??= rCam.ReturnFContainer("Items");
+        for (int i = 0; i < sLeaser.sprites.Length; i++)
+        {
+            sLeaser.sprites[i].RemoveFromContainer();
+            newContatiner.AddChild(sLeaser.sprites[i]);
+        }
+    }
+    public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         Vector2 vector = Vector2.Lerp(firstChunk.lastPos, firstChunk.pos, timeStacker);
         for (int i = 0;  i < sLeaser.sprites.Length; i++)
@@ -62,21 +90,44 @@ public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
             sLeaser.sprites[i].y = vector.y - camPos.y;
         }
     }
-    public virtual void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+    public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
     {
-        Colour colour = Colour.Lerp(new Colour(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
-        sLeaser.sprites[0].color = colour;
-        sLeaser.sprites[1].color = colour + new Colour(0.3f, 0.3f, 0.3f) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
-        sLeaser.sprites[2].color = Colour.Lerp(new Colour(1f, 0f, 0f), palette.blackColor, 0.3f);
+        sLeaser.sprites[0].color = AbstrSeed.innerColour;
+        sLeaser.sprites[1].color = AbstrSeed.outerColour;
+
+        //Colour colour = Colour.Lerp(new Colour(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
+        //sLeaser.sprites[0].color = colour;
+        //sLeaser.sprites[1].color = colour + new Colour(0.3f, 0.3f, 0.3f) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
+        //sLeaser.sprites[2].color = Colour.Lerp(new Colour(1f, 0f, 0f), palette.blackColor, 0.3f);
     }
-    public virtual void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
+    #endregion
+
+    public void Explode()
     {
-        newContatiner ??= rCam.ReturnFContainer("Items");
-        for (int i = 0; i < sLeaser.sprites.Length; i++)
+        if (slatedForDeletetion)
         {
-            sLeaser.sprites[i].RemoveFromContainer();
-            newContatiner.AddChild(sLeaser.sprites[i]);
+            return;
         }
+        InsectCoordinator smallInsects = null;
+        for (int i = 0; i < room.updateList.Count; i++)
+        {
+            if (room.updateList[i] is InsectCoordinator insectCoordinator)
+            {
+                smallInsects = insectCoordinator;
+                break;
+            }
+        }
+        for (int j = 0; j < 70; j++)
+        {
+            room.AddObject(new SporeCloud(firstChunk.pos, Custom.RNV() * Random.value * 10f, AbstrSeed.innerColour, 1f, (thrownBy != null) ? thrownBy.abstractCreature : null, j % 20, smallInsects));
+        }
+        room.AddObject(new SporePuffVisionObscurer(firstChunk.pos));
+        for (int k = 0; k < 7; k++)
+        {
+            room.AddObject(new PuffBallSkin(firstChunk.pos, Custom.RNV() * Random.value * 16f, color, Colour.Lerp(color, AbstrSeed.outerColour, 0.5f)));
+        }
+        room.PlaySound(SoundID.Puffball_Eplode, firstChunk);
+        Destroy();
     }
 
     public void BitByPlayer(Creature.Grasp grasp, bool eu)
@@ -87,6 +138,7 @@ public class Seed : PlayerCarryableItem, IDrawable, IPlayerEdible
         grasp.Release();
         Destroy();
     }
+
     public bool Edible { get { return true; } }
     public int BitesLeft { get { return 1; } }
     public int FoodPoints { get { return 0; } }

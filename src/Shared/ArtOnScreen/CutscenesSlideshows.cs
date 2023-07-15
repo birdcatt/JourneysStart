@@ -29,6 +29,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             // ...manager.nextSlideshow = alt end slideshow id
             // ...manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
             //then destroy the script
+            //also look at RainWorldGame.BeatGameMode
 
             IL.Menu.SlideShow.ctor += SlideShow_ctor;
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;

@@ -44,15 +44,26 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
                 TailTextureName = "lightpup_tailstripes";
                 TailTexture = Plugin.LightpupTailTexture;
             }
-            else //if (Plugin.sproutcat == name)
+            else if (Plugin.sproutcat == name)
             {
                 TailTextureName = "sproutcat_tailtexture";
                 TailTexture = Plugin.SproutcatTailTexture;
             }
+            else
+            {
+                TailTextureName = "strawberry_tailtexture";
+                TailTexture = Plugin.StrawberryTailTexture;
+            }
 
             playerRef = new WeakReference<Player>(player);
 
-            SetupColours(player);
+            //SetupColours(player);
+            BodyColour = Utility.GetSlugcatColour(player, 0);
+            PatternColour = Utility.GetSlugcatColour(player, 2);
+
+            if (Colour.white == BodyColour)
+                BodyColour = Custom.hexToColor("feffff"); //pure white is not a viable body colour, since the stripes will colour the entire tail
+
             LoadTailAtlas();
 
             OldPatternColour = PatternColour;
@@ -77,6 +88,7 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
             }
         }
 
+#if false
         #region colours
         public void SetupColours(Player player)
         {
@@ -128,6 +140,7 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
             }
         }
         #endregion
+#endif
 
         public void LoadTailAtlas()
         {

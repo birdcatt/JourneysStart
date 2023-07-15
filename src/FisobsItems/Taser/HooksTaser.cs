@@ -2,8 +2,8 @@
 using UnityEngine;
 //using Colour = UnityEngine.Color;
 using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
-using JourneysStart.Lightbringer.Data;
 using static JourneysStart.Utility;
+using JourneysStart.Slugcats.Lightbringer.MiscData;
 
 namespace JourneysStart.FisobsItems.Taser;
 

@@ -3,7 +3,7 @@ using Color = UnityEngine.Color;
 using Vector2 = UnityEngine.Vector2;
 using Debug = UnityEngine.Debug;
 
-namespace JourneysStart.Outgrowth;
+namespace JourneysStart.Slugcats.Outgrowth;
 
 public class RoomScripts
 {

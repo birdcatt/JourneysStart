@@ -7,7 +7,7 @@ using RWCustom;
 using Random = UnityEngine.Random;
 using System.Collections.Generic;
 
-namespace JourneysStart.Lightbringer.PlayerStuff;
+namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 
 public static class ElecResist
 {
@@ -33,7 +33,7 @@ public static class ElecResist
                     if (self.horizontalAlignment && bodyChunk.ContactPoint.y != 0
                         || !self.horizontalAlignment && bodyChunk.ContactPoint.x != 0)
                     {
-                        pData.Lightpup.HitByZapcoil = true;
+                        pData.Lightpup.hitByZapcoil = true;
                         break;
                     }
                 }
@@ -50,7 +50,7 @@ public static class ElecResist
         c.Emit(OpCodes.Ldarg_0);
         c.EmitDelegate((Player self) =>
         {
-            return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData pData) && pData.IsLightpup && pData.Lightpup.HitByZapcoil;
+            return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData pData) && pData.IsLightpup && pData.Lightpup.hitByZapcoil;
         });
         c.Emit(OpCodes.Brfalse, label);
 
@@ -59,7 +59,7 @@ public static class ElecResist
         {
             Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData pData);
 
-            pData.Lightpup.HitByZapcoil = false;
+            pData.Lightpup.hitByZapcoil = false;
             pData.Lightpup.RemoveFlareCharge();
             self.room.PlaySound(SoundID.Fire_Spear_Pop, self.firstChunk.pos);
             (self.graphicsModule as PlayerGraphics).blink = 0;
@@ -143,5 +143,4 @@ public static class ElecResist
 
         c.MarkLabel(label);
     }
-
 }

@@ -5,8 +5,9 @@ using System;
 using Debug = UnityEngine.Debug;
 using JourneysStart.FisobsItems.Seed;
 using JourneysStart.Shared.PlayerStuff;
+using Colour = UnityEngine.Color;
 
-namespace JourneysStart.Outgrowth.Food;
+namespace JourneysStart.Slugcats.Outgrowth.Food;
 
 public class SeedSpitup
 {
@@ -15,15 +16,13 @@ public class SeedSpitup
         On.Player.Regurgitate += Player_Regurgitate;
         IL.Player.GrabUpdate += Player_GrabUpdate;
         IL.PlayerGraphics.Update += PlayerGraphics_Update;
-
-        On.Player.SwallowObject += Player_SwallowObject;
     }
 
     public static bool CanRegurgitate(Player self)
     {
         return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p)
             && p.IsSproutcat
-            && (p.Sproutcat.SeedSpitUpMax > 0 || self.FoodInStomach > 0)
+            && (p.Sproutcat.seedSpitUpMax > 0 || self.FoodInStomach > 0)
             && null == self.objectInStomach
             && -1 != self.FreeHand();
     }
@@ -33,17 +32,19 @@ public class SeedSpitup
     {
         if (self.objectInStomach == null && CanRegurgitate(self) && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p) && p.IsSproutcat)
         {
-            if (p.Sproutcat.SeedSpitUpMax > 0)
+            if (p.Sproutcat.seedSpitUpMax > 0)
             {
-                p.Sproutcat.SeedSpitUpMax--;
-                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating free seed ({p.Sproutcat.SeedSpitUpMax} left)");
+                p.Sproutcat.seedSpitUpMax--;
+                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating free seed ({p.Sproutcat.seedSpitUpMax} left)");
             }
             else
             {
                 self.SubtractFood(1);
                 Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating seed, subtracted food");
             }
-            self.objectInStomach = new SeedAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID());
+            Colour baseCol = Utility.GetSlugcatColour(self, 0);
+            Colour seedCol = Utility.GetSlugcatColour(self, 2);
+            self.objectInStomach = new SeedAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID(), baseCol, seedCol);
         }
         orig(self);
     }
@@ -136,23 +137,4 @@ public class SeedSpitup
         c.Emit(OpCodes.Brtrue_S, proceedCond);
     }
     #endregion
-
-    public static void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
-    {
-        orig(self, grasp);
-
-        if (Plugin.sproutcat == self.slugcatStats.name)
-        {
-            if (AbstractObjectType.FlareBomb == self.objectInStomach.type)
-            {
-                self.objectInStomach = new AbstractPhysicalObject(self.room.world, AbstractObjectType.Lantern, null, self.abstractCreature.pos, self.room.game.GetNewID());
-                self.SubtractFood(1);
-            }
-            else if (AbstractObjectType.FlyLure == self.objectInStomach.type)
-            {
-                self.objectInStomach = new AbstractConsumable(self.room.world, AbstractObjectType.FirecrackerPlant, null, self.abstractCreature.pos, self.room.game.GetNewID(), -1, -1, null);
-                self.SubtractFood(1);
-            }
-        }
-    }
 }
