@@ -26,6 +26,7 @@ sealed class PlayerData
 
     public bool SpritesInited;
     public SlugTailTexture tailPattern;
+    public bool usingDMSHeadSprite;
 
     public ModCompatibility.DressMySlugcatPatch dmsModCompat;
 
@@ -75,11 +76,19 @@ sealed class PlayerData
 
     public void ModCompat_DressMySlugcat_DrawSprites(RoomCamera rCam, RoomCamera.SpriteLeaser sLeaser)
     {
-        if (Plugin.ModEnabled_DressMySlugcat && playerRef.TryGetTarget(out Player player))
+        try
         {
-            dmsModCompat?.DressMySlugcat_DrawSprites(player.graphicsModule as PlayerGraphics, sLeaser, rCam);
+            if (Plugin.ModEnabled_DressMySlugcat && playerRef.TryGetTarget(out Player player))
+            {
+                dmsModCompat?.DressMySlugcat_DrawSprites(player.graphicsModule as PlayerGraphics, sLeaser, rCam);
+            }
+            if (!tailPattern.usingDMSTailSprite)
+                sLeaser.sprites[2].color = Colour.white; //white tail
         }
-        if (!tailPattern.usingDMSTailSprite)
-            sLeaser.sprites[2].color = Colour.white; //white tail
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+
     }
 }

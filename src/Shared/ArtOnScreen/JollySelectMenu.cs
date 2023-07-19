@@ -92,10 +92,12 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static string JollyPlayerSelector_GetPupButtonOffName(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GetPupButtonOffName orig, JollyPlayerSelector self)
         {
             string val = orig(self);
-            if (Utility.IsLightpup(self.JollyOptions(self.index).playerClass))
-                return Plugin.lghtbrpup + "_pup_off";
-            if (Utility.IsSproutcat(self.JollyOptions(self.index).playerClass))
-                return Plugin.sproutcat + "_pup_off";
+            //if (Utility.IsLightpup(self.JollyOptions(self.index).playerClass))
+            //    return Plugin.lghtbrpup + "_pup_off";
+            //if (Utility.IsSproutcat(self.JollyOptions(self.index).playerClass))
+            //    return Plugin.sproutcat + "_pup_off";
+            if (Utility.IsModcat(self.JollyOptions(self.index).playerClass))
+                return self.JollyOptions(self.index).playerClass + "_pup_off";
             return val;
         }
         public static void SymbolButtonTogglePupButton_LoadIcon(On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.orig_LoadIcon orig, SymbolButtonTogglePupButton self)

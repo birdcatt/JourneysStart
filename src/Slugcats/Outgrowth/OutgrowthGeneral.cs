@@ -3,7 +3,6 @@ using System.Reflection;
 //using MonoMod.Cil;
 //using Mono.Cecil.Cil;
 using Debug = UnityEngine.Debug;
-using static JourneysStart.SaveDataInfo;
 using JourneysStart.Slugcats.Outgrowth.Food;
 using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 using JourneysStart.Slugcats.Outgrowth.Rope;

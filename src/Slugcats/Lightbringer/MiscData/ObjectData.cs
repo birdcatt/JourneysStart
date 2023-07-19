@@ -32,6 +32,7 @@ namespace JourneysStart.Slugcats.Lightbringer.MiscData
 
             foreach (List<PhysicalObject> objList in room.physicalObjects)
             {
+                //its a list because theres several layers in rw
                 foreach (PhysicalObject obj in objList)
                 {
                     if (obj?.firstChunk == null)
@@ -77,7 +78,7 @@ namespace JourneysStart.Slugcats.Lightbringer.MiscData
                             }
                         }
 
-                        crit.Stun(Random.Range(20, 40));
+                        crit.Stun(Random.Range(60, 100));
                     }
                 }
             }

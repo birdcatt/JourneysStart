@@ -7,7 +7,6 @@ using Mono.Cecil.Cil;
 using static JourneysStart.Slugcats.Outgrowth.PlayerStuff.OutgrowthData;
 using Vector2 = UnityEngine.Vector2;
 using static JourneysStart.Shared.PlayerStuff.PlayerGraf.PlayerGrafMethods;
-using System.Numerics;
 
 namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
@@ -34,14 +33,15 @@ public class PlayerGrafHooks
 
         if (Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData) && pData.IsSproutcat)
         {
-            pData.Sproutcat.cheekFluff?.Update();
+            pData.Sproutcat.cheekFluff.Update();
             RopeMethods.MSCUpdate(self);
         }
     }
     public static string PlayerGraphics_DefaultFaceSprite(On.PlayerGraphics.orig_DefaultFaceSprite orig, PlayerGraphics self, float eyeScale)
     {
         string val = orig(self, eyeScale);
-        if (ModManager.MSC && Plugin.sproutcat == self.player.SlugCatClass)
+        //if (ModManager.MSC && Plugin.sproutcat == self.player.SlugCatClass)
+        if (Plugin.PlayerDataCWT.TryGetValue(self.player, out var pData) && pData.IsSproutcat && !pData.Sproutcat.usingDMSFaceSprite)
         {
             //arti face
             if (self.blink > 0)
@@ -175,7 +175,7 @@ public class PlayerGrafHooks
             else if (pData.IsSproutcat)
             {
                 FContainer container = newContainer != null ? newContainer : rCam.ReturnFContainer("Midground");
-                pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, /*rCam.ReturnFContainer("Midground")*/ container); //so fluff is behind everything else
+                pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, container); //so fluff is behind everything else
                 foreach (int i in pData.Sproutcat.spriteIndexes)
                 {
                     AddNewSpritesToContainer(sLeaser, rCam, i);
@@ -192,6 +192,7 @@ public class PlayerGrafHooks
         {
             #region sprite math
             //why are you doing maths? because the sprites are less laggy and follow the body better, esp when slug is at higher speeds
+            //why is it like that? i dont know
 
             //maths for lightpup's body stripes / sproutcat's body scar
             Vector2 vector = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
@@ -215,6 +216,7 @@ public class PlayerGrafHooks
             }
             if (ModManager.CoopAvailable && self.player.bool1) //what the hell is bool1
             {
+                //i think bool1 is a haunted variable
                 headPos.y -= 1.9f;
                 num3 = Mathf.Lerp(num3, 45f * Mathf.Sign(vector.x - vector2.x), 0.7f);
             }
@@ -299,28 +301,31 @@ public class PlayerGrafHooks
             }
             else if (playerData.IsSproutcat)
             {
-                //head & face scar asymmetry
-                string headSpriteName = sLeaser.sprites[3].element.name;
-                string scarSpriteName;
-                int faceScarIndex = playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX];
+                if (!playerData.usingDMSHeadSprite)
+                {
+                    //head & face scar asymmetry
+                    string headSpriteName = sLeaser.sprites[3].element.name;
+                    string scarSpriteName;
+                    int faceScarIndex = playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX];
 
-                headSpriteName = headSpriteName.Remove(0, headSpriteName.IndexOf("Head"));
-                if (sLeaser.sprites[3].scaleX < 0)
-                {
-                    //lmao jsSproutcatLeftScarjsSproutcatLeftHeadA4, don't swap this order
-                    scarSpriteName = "jsSproutcatLeftScar" + headSpriteName;
-                    headSpriteName = "jsSproutcatLeft" + headSpriteName;
+                    headSpriteName = headSpriteName.Remove(0, headSpriteName.IndexOf("Head"));
+                    if (sLeaser.sprites[3].scaleX < 0)
+                    {
+                        //lmao jsSproutcatLeftScarjsSproutcatLeftHeadA4, don't swap this order
+                        scarSpriteName = "jsSproutcatLeftScar" + headSpriteName;
+                        headSpriteName = "jsSproutcatLeft" + headSpriteName;
+                    }
+                    else
+                    {
+                        scarSpriteName = "jsSproutcatRightScar" + headSpriteName;
+                        headSpriteName = "jsSproutcatRight" + headSpriteName;
+                    }
+                    sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
+
+                    sLeaser.sprites[faceScarIndex].element = Futile.atlasManager.GetElementWithName(scarSpriteName);
+                    sLeaser.sprites[faceScarIndex].scaleX = sLeaser.sprites[3].scaleX;
+                    sLeaser.sprites[faceScarIndex].scaleY = sLeaser.sprites[3].scaleY;
                 }
-                else
-                {
-                    scarSpriteName = "jsSproutcatRightScar" + headSpriteName;
-                    headSpriteName = "jsSproutcatRight" + headSpriteName;
-                }
-                sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
-                
-                sLeaser.sprites[faceScarIndex].element = Futile.atlasManager.GetElementWithName(scarSpriteName);
-                sLeaser.sprites[faceScarIndex].scaleX = sLeaser.sprites[3].scaleX;
-                sLeaser.sprites[faceScarIndex].scaleY = sLeaser.sprites[3].scaleY;
 
                 //body scar scale
                 int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX];
@@ -328,6 +333,15 @@ public class PlayerGrafHooks
                 sLeaser.sprites[bodyScarIndex].scaleY = sLeaser.sprites[1].scaleY;
 
                 RopeMethods.DrawSprites(self, sLeaser, timeStacker, camPos);
+            }
+            else if (playerData.IsStrawberry)
+            {
+                if (!playerData.usingDMSHeadSprite)
+                {
+                    string headSpriteName = sLeaser.sprites[3].element.name;
+                    headSpriteName = "jsStrawberry" + headSpriteName.Remove(0, headSpriteName.IndexOf("Head"));
+                    sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
+                }
             }
         }
     }

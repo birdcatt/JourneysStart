@@ -25,7 +25,7 @@ namespace JourneysStart
 
         public ConfigMenu()
         {
-            removeCraftingLight = config.Bind("removeCraftingLight",false,
+            removeCraftingLight = config.Bind("removeCraftingLight", false,
                 new ConfigurableInfo("Disable the light associated with crafting electric spears. Does not remove flashing lights from other parts of the game.",
                 tags: new object[]
                 {

@@ -25,6 +25,8 @@ sealed class OutgrowthData
     public const int ROPE_INDEX = 1;
     public const int FACE_SCAR_INDEX = 2;
 
+    public bool usingDMSFaceSprite;
+
     public int seedSpitUpMax;
     public bool ateABugThisCycle;
 
