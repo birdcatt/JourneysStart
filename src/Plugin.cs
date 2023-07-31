@@ -87,9 +87,11 @@ namespace JourneysStart
             Logger = base.Logger;
 
             FlareKeybind.Description = "The key held to have the Lightbringer emit an bright, electric glow to stun all near him.";
+            FlareKeybind.MapSuppressed = true;
+            FlareKeybind.SleepSuppressed = true;
 
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
-            Hook();
+            //Hook();
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
             On.RainWorld.OnModsDisabled += RainWorld_OnModsDisabled;
         }
@@ -99,6 +101,8 @@ namespace JourneysStart
         {
             //most of the time, its fine to register values once then never unregister
             //OnModsInit is called after OnModsDisabled
+
+            Hook();
 
             MachineConnector.SetRegisteredOI(MOD_ID, ConfigMenu.instance);
 

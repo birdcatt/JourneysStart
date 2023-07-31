@@ -3,6 +3,7 @@ using Vector2 = UnityEngine.Vector2;
 using MoreSlugcats;
 using Debug = UnityEngine.Debug;
 using UnityEngine;
+using static JourneysStart.Slugcats.Outgrowth.PlayerStuff.OutgrowthData;
 
 namespace JourneysStart.Slugcats.Outgrowth.Rope;
 
@@ -10,6 +11,7 @@ public static class VineCombat
 {
     //public static readonly Player.Tongue.Mode CombatHit = new("SproutcatVineCombatHit", true);
     public static readonly Player.Tongue.Mode CombatShootingOut = new("SproutcatVineCombatShootingOut", true);
+    public static readonly Player.Tongue.Mode CombatWaveInAir = new("SproutcatVineCombatWaveInAir", true);
 
     public static void Hook()
     {
@@ -95,14 +97,20 @@ public static class VineCombat
     {
         orig(self);
 
-        if (self.mode == CombatShootingOut)
+        if (Plugin.PlayerDataCWT.TryGetValue(self.player, out var cwt) && cwt.IsSproutcat)
         {
-            if (self.Attached && self.attachedTime > 3 || self.attachedChunk == null)
+            if (self.mode == CombatWaveInAir)
             {
-                //attached briefly for attacking crits
-                self.Release();
+                //self.Elasticity();
+                cwt.Sproutcat.vineInAir++;
+                if (self.Attached && self.attachedTime > VINE_IN_AIR_MAX || self.attachedChunk == null && cwt.Sproutcat.vineInAir > VINE_IN_AIR_MAX)
+                {
+                    //attached briefly for attacking crits
+                    cwt.Sproutcat.vineInAir = 0;
+                    self.Release();
+                }
             }
-            else if (Plugin.PlayerDataCWT.TryGetValue(self.player, out var cwt) && cwt.IsSproutcat)
+            else if (self.mode == CombatShootingOut)
             {
                 self.requestedRopeLength = Mathf.Max(0f, self.requestedRopeLength - 4f);
 
@@ -115,6 +123,10 @@ public static class VineCombat
                     {
                         self.CombatHitCreature(collisionResult);
                     }
+                }
+                else
+                {
+                    self.mode = CombatWaveInAir;
                 }
 
                 cwt.Sproutcat.foundNearestCreature = false;

@@ -1,4 +1,5 @@
-﻿using HUD;
+﻿#if false
+using HUD;
 using System.Collections.Generic;
 using Mathf = UnityEngine.Mathf;
 using Vector2 = UnityEngine.Vector2;
@@ -21,7 +22,7 @@ public class PupHUD
 
     public static void Hook()
     {
-
+        
     }
 
     public class MockPupFoodMeter: HudPart
@@ -59,14 +60,14 @@ public class PupHUD
                 shader = hud.rainWorld.Shaders["FlatLight"],
                 color = new Colour(0f, 0f, 0f)
             };
-            fContainer.AddChild(darkFade);
+            FContainer.AddChild(darkFade);
 
             lineSprite = new FSprite("pixel", true) // the | line separating min and max
             {
                 scaleX = 1.5f,
                 scaleY = 18.5f
             };
-            fContainer.AddChild(lineSprite);
+            FContainer.AddChild(lineSprite);
 
             for (int j = 0; j < circles.Count; j++)
             {
@@ -78,7 +79,7 @@ public class PupHUD
         }
 
         #region getters/setters
-        public FContainer fContainer
+        public FContainer FContainer
         {
             get
             {
@@ -135,17 +136,17 @@ public class PupHUD
                     shader = meter.hud.rainWorld.Shaders["FlatLight"],
                     color = new Colour(0f, 0f, 0f)
                 };
-                meter.fContainer.AddChild(gradient);
+                meter.FContainer.AddChild(gradient);
             }
             public void AddCircles()
             {
                 circles = new HUDCircle[2];
-                circles[0] = new(meter.hud, HUDCircle.SnapToGraphic.FoodCircleA, meter.fContainer, 0)
+                circles[0] = new(meter.hud, HUDCircle.SnapToGraphic.FoodCircleA, meter.FContainer, 0)
                 {
                     rad = 0f,
                     lastRad = 0f
                 };
-                circles[1] = new(meter.hud, HUDCircle.SnapToGraphic.FoodCircleB, meter.fContainer, 0)
+                circles[1] = new(meter.hud, HUDCircle.SnapToGraphic.FoodCircleB, meter.FContainer, 0)
                 {
                     rad = 0f,
                     lastRad = 0f
@@ -199,3 +200,4 @@ public class PupHUD
     //    public int currentFood;
     //}
 }
+#endif

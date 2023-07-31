@@ -3,7 +3,6 @@ using Vector2 = UnityEngine.Vector2;
 using Mathf = UnityEngine.Mathf;
 using MoreSlugcats;
 using JourneysStart.Shared.PlayerStuff;
-using System.Data;
 using JourneysStart.Slugcats.Outgrowth.Rope;
 using JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
@@ -31,9 +30,15 @@ sealed class OutgrowthData
     public bool ateABugThisCycle;
 
     public int inWater;
-    public const int inWaterMax = 4 * 40;
+    public const int IN_WATER_MAX = 4 * 40;
 
     public bool foundNearestCreature;
+    public int vineInAir; //timer
+    public const int VINE_IN_AIR_MAX = 4 * 40;
+
+    public int pyroJump; //used for acid/explosion resist, max is MoreSlugcats.cfgArtificerExplosionCapacity
+    public const int PYRO_JUMP_CD_MAX = 60;
+    public int pyroJumpCD = PYRO_JUMP_CD_MAX; //used to count down to when pyroJump should be reset
 
     public OutgrowthData(PlayerData playerData)
     {
@@ -54,28 +59,41 @@ sealed class OutgrowthData
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return;
 
-        if (player.dead)
+        if (player.dead || player.stun > 0)
             return;
 
         if (player.Submersion > 0 && !player.input[0].AnyInput)
         {
-            if (inWater >= inWaterMax)
+            if (inWater >= IN_WATER_MAX)
             {
                 player.AddQuarterFood();
-                inWater = 1 * 40;
+                inWater = 2 * 40;
             }
             else
                 inWater++;
         }
         else
             inWater = 0;
+
+        if (player.FoodInStomach >= player.MaxFoodInStomach) //go drown badly if youre full
+            player.slugcatStats.lungsFac = 1.3f;
+        //now add else if (get value from json) go back to normal
     }
 
-    public void TongueUpdate()
+    public void ClassMechanicsSproutcat()
     {
         //used in ClassMechanicsSaint hook
         if (!playerData.playerRef.TryGetTarget(out Player player))
             return;
+
+        if (pyroJump > 0 && pyroJumpCD-- <= 0)
+        {
+            pyroJump--;
+            if (pyroJumpCD >= Mathf.Max(1, MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value - 5))
+                pyroJumpCD = 40;
+            else
+                pyroJumpCD = 60;
+        }
 
         if (CanShootTongue())
         {

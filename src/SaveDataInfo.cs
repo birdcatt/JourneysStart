@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if false
+using System.Collections.Generic;
 using SlugBase.SaveData;
 
 namespace JourneysStart;
@@ -141,3 +142,4 @@ public static class SaveDataInfo
         }
     }
 }
+#endif

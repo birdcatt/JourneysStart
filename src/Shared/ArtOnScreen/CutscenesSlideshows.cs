@@ -7,16 +7,17 @@ using Debug = UnityEngine.Debug;
 using Vector2 = UnityEngine.Vector2;
 using System.IO;
 using System;
+using static Menu.MenuDepthIllustration;
 
 namespace JourneysStart.Shared.ArtOnScreen
 {
     public class CutscenesSlideshows
     {
-        public static SlideShowID LightpupIntroSlideShow = new("LightpupIntroSlideShow", true);
-        public static SlideShowID LightpupOutroVoidSeaSlideShow = new("LightpupOutroVoidSeaSlideShow", true);
+        public static SlideShowID LightpupIntroSlideShow = new("jsLightpupIntroSlideShow", true);
+        public static SlideShowID LightpupOutroVoidSeaSlideShow = new("jsLightpupOutroVoidSeaSlideShow", true);
 
-        public static SceneID LightpupIntroSceneA = new("LightpupIntroSceneA", true);
-        //public static SceneID LightpupIntroSceneB;
+        public static SceneID LightpupIntroSceneA = new("jsLightpupIntroSceneA", true);
+        public static SceneID LightpupIntroSceneB = new("jsLightpupIntroSceneB", true);
         //public static SceneID LightpupIntroSceneC;
 
         public static void Hook()
@@ -114,7 +115,9 @@ namespace JourneysStart.Shared.ArtOnScreen
                     Scene[] scenes =
                     {
                         new Scene(SceneID.Empty, 0f, 0f, 0f),
-                        new Scene(LightpupIntroSceneA, self.ConvertTime(0, 0, 20), self.ConvertTime(0, 3, 26), self.ConvertTime(0, 8, 6))
+                        new Scene(LightpupIntroSceneA, self.ConvertTime(0, 0, 20), self.ConvertTime(0, 3, 26), self.ConvertTime(0, 8, 6)),
+                        new Scene(SceneID.Empty, self.ConvertTime(0, 9, 6), 0f, 0f),
+                        new Scene(LightpupIntroSceneB, self.ConvertTime(0, 9, 19), self.ConvertTime(0, 10, 19), self.ConvertTime(0, 16, 2))
                     };
                     foreach (Scene scene in scenes)
                     {
@@ -159,16 +162,47 @@ namespace JourneysStart.Shared.ArtOnScreen
 
             if (LightpupIntroSceneA == self.sceneID)
             {
-                self.sceneFolder = GetLScenesFilePath_Lightpup("intro_a");
+                self.sceneFolder = GetScenesFilePath_Lightpup("intro_a");
 
                 //if (self.flatMode)
                 self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "flat", new Vector2(683f, 384f), false, true));
                 //non-flatmode adds MenuDepthIllustration instead
             }
+            else if (LightpupIntroSceneB == self.sceneID)
+            {
+                self.sceneFolder = GetScenesFilePath_Lightpup("intro_b");
+
+                if (self.flatMode)
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "flat", new Vector2(683f, 384f), false, true));
+                else
+                {
+                    MenuIllustration[] illusts =
+                    {
+                        //new MenuIllustration(self.menu, self, self.sceneFolder, "bg 1", new Vector2(683f, 384f), false, true),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 1", new Vector2(683f, 384f), 4.7f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 2", new Vector2(683f, 384f), 4.5f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 3", new Vector2(683f, 384f), 4.5f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 4", new Vector2(683f, 384f), 4.1f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 5", new Vector2(683f, 384f), 3.7f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 6", new Vector2(683f, 384f), 3.3f, MenuShader.Basic),
+                        //new MenuIllustration(self.menu, self, self.sceneFolder, "bg 7", new Vector2(683f, 384f), false, true),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 7", new Vector2(683f, 384f), 3.125f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "fg 1", new Vector2(683f, 384f), 3.0f, MenuShader.Basic),
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "fg 2", new Vector2(683f, 384f), 2.8f, MenuShader.Basic),
+                        //new MenuIllustration(self.menu, self, self.sceneFolder, "fg 3", new Vector2(683f, 384f), false, true)
+                        new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg 3", new Vector2(683f, 384f), 2.6f, MenuShader.Basic)
+                    };
+                    foreach (var imgs in illusts)
+                    {
+                        self.AddIllustration(imgs);
+                    }
+                    (self as InteractiveMenuScene).idleDepths.Add(3.0f);
+                }
+            }
         }
         #endregion
 
-        public static string GetLScenesFilePath_Lightpup(string fileName)
+        public static string GetScenesFilePath_Lightpup(string fileName)
         {
             return GetScenesFilePath("lightpup" + Path.DirectorySeparatorChar.ToString() + fileName);
         }

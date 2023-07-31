@@ -124,10 +124,18 @@ public class CheekFluff
             float xIncr = 2f;
             float rotationAngle = 160f; //higher = goes up
 
+            if (player.playerState.isPup)
+            {
+                rotationAngle = 240f;
+            }
+
             if (i >= lowerFluffIndex)
             {
                 xIncr -= 1.5f;
-                rotationAngle -= 45f;
+                if (!player.playerState.isPup)
+                    rotationAngle -= 45f;
+                else
+                    rotationAngle -= 15f;
                 vector.y -= 1f;
                 //vector.x += 0.5f; //idk? try ig
             }

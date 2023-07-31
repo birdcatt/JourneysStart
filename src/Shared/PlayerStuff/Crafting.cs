@@ -135,6 +135,11 @@ public class Crafting
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractObjectType.FirecrackerPlant, null, self.abstractCreature.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.SubtractFood(1);
             }
+            else if (AbstractObjectType.PuffBall == self.objectInStomach.type)
+            {
+                self.objectInStomach = null;
+                self.AddFood(1);
+            }
         }
         else if (Plugin.lghtbrpup == self.slugcatStats.name)
         {

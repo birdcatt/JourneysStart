@@ -16,6 +16,7 @@ namespace JourneysStart.Slugcats.Outgrowth
             Diet.Hook();
             SeedSpitup.Hook();
 
+            PyroResist.Hook();
             WormgrassImmunity.Hook();
             Crafting.Hook();
 

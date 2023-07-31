@@ -127,7 +127,7 @@ namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff
             else
                 Debug.Log($"{Plugin.MOD_NAME}: (Crafting) Spawning crafted item {item.type}");
 
-            SpawnItemInHand(self, item);
+            SpawnItemInHand(self, item);    
 
             if (spawnSecondItem && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
             {
@@ -364,9 +364,7 @@ namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff
             }
             else if (physObj is WaterNut w)
             {
-                if (!w.AbstrNut.swollen)
-                    return AbstractObjectType.Rock;
-                return AbstractObjectType.DangleFruit;
+                return w.AbstrNut.swollen ? AbstractObjectType.DangleFruit : AbstractObjectType.Rock;
             }
             AbstractPhysicalObject abstrPhysObj = physObj.abstractPhysicalObject;
             if (abstrPhysObj is AbstractSpear spear && (spear.explosive || spear.hue > 0))

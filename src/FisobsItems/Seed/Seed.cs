@@ -64,6 +64,16 @@ public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
         }
     }
 
+    public override bool HitSomething(SharedPhysics.CollisionResult result, bool eu)
+    {
+        bool val = base.HitSomething(result, eu);
+        if (val)
+        {
+            Explode();
+        }
+        return val;
+    }
+
     #region sprites
     public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
@@ -92,8 +102,8 @@ public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
     }
     public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
     {
-        sLeaser.sprites[0].color = AbstrSeed.innerColour;
-        sLeaser.sprites[1].color = AbstrSeed.outerColour;
+        sLeaser.sprites[0].color = AbstrSeed.outerColour;
+        sLeaser.sprites[1].color = AbstrSeed.innerColour;
 
         //Colour colour = Colour.Lerp(new Colour(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
         //sLeaser.sprites[0].color = colour;
@@ -119,7 +129,7 @@ public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
         }
         for (int j = 0; j < 70; j++)
         {
-            room.AddObject(new SporeCloud(firstChunk.pos, Custom.RNV() * Random.value * 10f, AbstrSeed.innerColour, 1f, (thrownBy != null) ? thrownBy.abstractCreature : null, j % 20, smallInsects));
+            room.AddObject(new SporeCloud(firstChunk.pos, Custom.RNV() * Random.value * 10f, AbstrSeed.innerColour, 1f, thrownBy?.abstractCreature, j % 20, smallInsects));
         }
         room.AddObject(new SporePuffVisionObscurer(firstChunk.pos));
         for (int k = 0; k < 7; k++)

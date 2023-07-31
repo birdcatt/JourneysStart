@@ -14,7 +14,6 @@ public static class ElecResist
     public static void Hook()
     {
         On.ZapCoil.Update += ZapCoil_Update;
-        IL.Player.Die += Player_Die;
         IL.Centipede.Shock += Centipede_Shock;
     }
 
@@ -40,35 +39,6 @@ public static class ElecResist
             }
         }
         orig(self, eu); //calls Creature.Die in here
-    }
-    public static void Player_Die(ILContext il)
-    {
-        //another place where i need to not call orig
-        ILCursor c = new(il);
-        ILLabel label = il.DefineLabel();
-
-        c.Emit(OpCodes.Ldarg_0);
-        c.EmitDelegate((Player self) =>
-        {
-            return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData pData) && pData.IsLightpup && pData.Lightpup.hitByZapcoil;
-        });
-        c.Emit(OpCodes.Brfalse, label);
-
-        c.Emit(OpCodes.Ldarg_0);
-        c.EmitDelegate((Player self) =>
-        {
-            Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData pData);
-
-            pData.Lightpup.hitByZapcoil = false;
-            pData.Lightpup.RemoveFlareCharge();
-            self.room.PlaySound(SoundID.Fire_Spear_Pop, self.firstChunk.pos);
-            (self.graphicsModule as PlayerGraphics).blink = 0;
-            self.Blink(90);
-            //dont stun, player still needs movement to not crash into a 2nd zapcoil in 0g
-        });
-        c.Emit(OpCodes.Ret);
-
-        c.MarkLabel(label);
     }
 
     public static void Centipede_Shock(ILContext il)

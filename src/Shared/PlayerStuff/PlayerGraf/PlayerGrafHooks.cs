@@ -174,7 +174,7 @@ public class PlayerGrafHooks
             }
             else if (pData.IsSproutcat)
             {
-                FContainer container = newContainer != null ? newContainer : rCam.ReturnFContainer("Midground");
+                FContainer container = newContainer ?? rCam.ReturnFContainer("Midground");
                 pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, container); //so fluff is behind everything else
                 foreach (int i in pData.Sproutcat.spriteIndexes)
                 {
@@ -309,22 +309,32 @@ public class PlayerGrafHooks
                     int faceScarIndex = playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX];
 
                     headSpriteName = headSpriteName.Remove(0, headSpriteName.IndexOf("Head"));
-                    if (sLeaser.sprites[3].scaleX < 0)
-                    {
-                        //lmao jsSproutcatLeftScarjsSproutcatLeftHeadA4, don't swap this order
-                        scarSpriteName = "jsSproutcatLeftScar" + headSpriteName;
-                        headSpriteName = "jsSproutcatLeft" + headSpriteName;
-                    }
-                    else
-                    {
-                        scarSpriteName = "jsSproutcatRightScar" + headSpriteName;
-                        headSpriteName = "jsSproutcatRight" + headSpriteName;
-                    }
-                    sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
 
-                    sLeaser.sprites[faceScarIndex].element = Futile.atlasManager.GetElementWithName(scarSpriteName);
-                    sLeaser.sprites[faceScarIndex].scaleX = sLeaser.sprites[3].scaleX;
-                    sLeaser.sprites[faceScarIndex].scaleY = sLeaser.sprites[3].scaleY;
+                    if (self.RenderAsPup && headSpriteName.StartsWith("HeadC"))
+                    {
+                        headSpriteName = "HeadA" + headSpriteName.Remove(0, "HeadC".Length);
+                    }
+
+                    if (headSpriteName.StartsWith("HeadA"))
+                    {
+                        if (sLeaser.sprites[3].scaleX < 0)
+                        {
+                            //lmao jsSproutcatLeftScarjsSproutcatLeftHeadA4, don't swap this order
+                            scarSpriteName = "jsSproutcatLeftScar" + headSpriteName;
+                            headSpriteName = "jsSproutcatLeft" + headSpriteName;
+                        }
+                        else
+                        {
+                            scarSpriteName = "jsSproutcatRightScar" + headSpriteName;
+                            headSpriteName = "jsSproutcatRight" + headSpriteName;
+                        }
+
+                        sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
+
+                        sLeaser.sprites[faceScarIndex].element = Futile.atlasManager.GetElementWithName(scarSpriteName);
+                        sLeaser.sprites[faceScarIndex].scaleX = sLeaser.sprites[3].scaleX;
+                        sLeaser.sprites[faceScarIndex].scaleY = sLeaser.sprites[3].scaleY;
+                    }
                 }
 
                 //body scar scale
@@ -339,7 +349,7 @@ public class PlayerGrafHooks
                 if (!playerData.usingDMSHeadSprite)
                 {
                     string headSpriteName = sLeaser.sprites[3].element.name;
-                    headSpriteName = "jsStrawberry" + headSpriteName.Remove(0, headSpriteName.IndexOf("Head"));
+                    headSpriteName = "jsStrawberryHeadA" + headSpriteName.Remove(0, headSpriteName.IndexOf("Head") + "HeadA".Length);
                     sLeaser.sprites[3].element = Futile.atlasManager.GetElementWithName(headSpriteName);
                 }
             }
