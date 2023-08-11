@@ -1,7 +1,4 @@
-﻿using SlugBase.DataTypes;
-using SlugBase.Features;
-using SlugBase;
-using System;
+﻿using System;
 using UnityEngine;
 using Colour = UnityEngine.Color;
 using Custom = RWCustom.Custom;
@@ -25,8 +22,8 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
 
         //private Unity.Collections.NativeArray<byte> TextureMipData;
 
-        private byte[] RedInTextureRef = { 255, 0, 0 }; //start as red/white, bc the mipData changes after the first time you apply
-        private byte[] WhiteInTextureRef = { 255, 255, 255 };
+        private byte[] RedInTextureRef;
+        private byte[] WhiteInTextureRef;
 
         public SlugTailTexture(Player player)
         {
@@ -87,60 +84,6 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
                 Debug.LogException(e);
             }
         }
-
-#if false
-        #region colours
-        public void SetupColours(Player player)
-        {
-            //prevent arena colours being assinged to main player outside of arena
-            bool jollyDefaultColourMode = ModManager.CoopAvailable && Custom.rainWorld.options.jollyColorMode == Options.JollyColorMode.DEFAULT;
-            int playerNumber = player.room.game.session is not ArenaGameSession && (player.playerState.playerNumber == 0 || jollyDefaultColourMode) ? -1 : player.playerState.playerNumber;
-
-            LoadDefaultColours(playerNumber);
-
-            if (PlayerGraphics.customColors != null && !player.IsJollyPlayer && !ModManager.JollyCoop)
-            {
-                if (PlayerGraphics.customColors.Count > 0)
-                    BodyColour = PlayerGraphics.CustomColorSafety(0);
-                if (PlayerGraphics.customColors.Count > 2)
-                    PatternColour = PlayerGraphics.CustomColorSafety(2);
-            }
-            else if (ModManager.CoopAvailable)
-            {
-                if (playerNumber > 0)
-                {
-                    //why is p1 null. entire reason i have to check for player and colour mode
-                    BodyColour = PlayerGraphics.JollyColor(playerNumber, 0);
-                    PatternColour = PlayerGraphics.JollyColor(playerNumber, 2);
-                }
-                else if (Custom.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM)
-                {
-                    //these are the jolly custom colours btw
-                    JollyCoop.JollyMenu.JollyPlayerOptions jollyPlayer = Custom.rainWorld.options.jollyPlayerOptionsArray[0];
-                    BodyColour = jollyPlayer.GetBodyColor();
-                    PatternColour = jollyPlayer.GetUniqueColor();
-                }
-            }
-            if (Colour.white == BodyColour)
-                BodyColour = Custom.hexToColor("feffff"); //pure white is not a viable body colour, since the stripes will colour the entire tail
-        }
-        public void LoadDefaultColours(int playerNumber)
-        {
-            if (!playerRef.TryGetTarget(out Player player))
-                return;
-
-            if (SlugBaseCharacter.TryGet(player.slugcatStats.name, out SlugBaseCharacter charac)
-                && charac.Features.TryGet(PlayerFeatures.CustomColors, out ColorSlot[] customColours))
-            {
-                //loading default colours
-                if (customColours.Length > 0)
-                    BodyColour = customColours[0].GetColor(playerNumber);
-                if (customColours.Length > 2)
-                    PatternColour = customColours[2].GetColor(playerNumber);
-            }
-        }
-        #endregion
-#endif
 
         public void LoadTailAtlas()
         {
@@ -211,7 +154,7 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
             if (usingDMSTailSprite)
                 return;
 
-            if (!(playerRef.TryGetTarget(out Player player) && player.room != null))
+            if (!playerRef.TryGetTarget(out Player player) || player.room == null)
                 return;
 
             foreach (RoomCamera.SpriteLeaser sLeaser in player.room.game.cameras[0].spriteLeasers)

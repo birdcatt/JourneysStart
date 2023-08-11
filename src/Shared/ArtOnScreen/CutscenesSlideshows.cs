@@ -1,4 +1,5 @@
-﻿using Menu;
+﻿#if false
+using Menu;
 using static Menu.SlideShow;
 using static Menu.MenuScene;
 using MonoMod.Cil;
@@ -221,3 +222,4 @@ namespace JourneysStart.Shared.ArtOnScreen
         }
     }
 }
+#endif

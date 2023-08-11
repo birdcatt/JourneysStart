@@ -78,6 +78,7 @@ public class PlayerGrafHooks
             if (pData.IsSproutcat)
             {
                 pData.Sproutcat.cheekFluff = new(self, 13);
+                pData.Sproutcat.backScales = new(self, 13 + pData.Sproutcat.cheekFluff.scales.Length);
 
                 self.ropeSegments = new PlayerGraphics.RopeSegment[20];
                 for (int i = 0; i < self.ropeSegments.Length; i++)
@@ -135,7 +136,7 @@ public class PlayerGrafHooks
                 {
                     pData.Sproutcat.spriteIndexes = new int[3]; //remember to change this to fit the new sprites
 
-                    int num = sLeaser.sprites.Length + pData.Sproutcat.cheekFluff.scalePos.Length;
+                    int num = sLeaser.sprites.Length + pData.Sproutcat.cheekFluff.scalePos.Length + pData.Sproutcat.backScales.numberOfSprites;
                     pData.Sproutcat.spriteIndexes[0] = num++; //++ so Array.Resize gets correct length
                     pData.Sproutcat.spriteIndexes[1] = num++;
                     pData.Sproutcat.spriteIndexes[2] = num++;
@@ -145,17 +146,21 @@ public class PlayerGrafHooks
                     sLeaser.sprites[pData.Sproutcat.spriteIndexes[0]] = new FSprite("sproutcat_bodyscar", true); //body scar
                     sLeaser.sprites[pData.Sproutcat.spriteIndexes[1]] = TriangleMesh.MakeLongMesh(self.ropeSegments.Length - 1, false, true); //rope
                     sLeaser.sprites[pData.Sproutcat.spriteIndexes[2]] = new FSprite("jsSproutcatLeftScarHeadA0", true); //face scar
+
                     pData.Sproutcat.cheekFluff.InitiateSprites(sLeaser);
+                    pData.Sproutcat.backScales.InitiateSprites(sLeaser);
                 }
 
-                //Debug.Log($"{Plugin.MOD_NAME}: {self.player.SlugCatClass}'s sLeaser.sprites.Length is {sLeaser.sprites.Length}");
-                //for (int i = 0; i < sLeaser.sprites.Length; i++)
-                //{
-                //    if (null == sLeaser.sprites[i])
-                //        Debug.Log($"\tsLeaser.sprites[{i}] is NULL");
-                //    else
-                //        Debug.Log($"\tsLeaser.sprites[{i}].element.name is {sLeaser.sprites[i].element.name}");
-                //}
+                #if true
+                Debug.Log($"{Plugin.MOD_NAME}: {self.player.SlugCatClass}'s sLeaser.sprites.Length is {sLeaser.sprites.Length}");
+                for (int i = 0; i < sLeaser.sprites.Length; i++)
+                {
+                    if (null == sLeaser.sprites[i])
+                        Debug.Log($"\tsLeaser.sprites[{i}] is NULL");
+                    else
+                        Debug.Log($"\tsLeaser.sprites[{i}].element.name is {sLeaser.sprites[i].element.name}");
+                }
+                #endif
 
                 //no need to call self.AddToContainer(sLeaser, rCam, null); since i IL'd to before that
             }
@@ -175,7 +180,10 @@ public class PlayerGrafHooks
             else if (pData.IsSproutcat)
             {
                 FContainer container = newContainer ?? rCam.ReturnFContainer("Midground");
+
+                pData.Sproutcat.backScales.AddToContainer(sLeaser, container);
                 pData.Sproutcat.cheekFluff.AddToContainer(sLeaser, container); //so fluff is behind everything else
+
                 foreach (int i in pData.Sproutcat.spriteIndexes)
                 {
                     AddNewSpritesToContainer(sLeaser, rCam, i);
@@ -264,6 +272,7 @@ public class PlayerGrafHooks
                 sLeaser.sprites[faceScarIndex].rotation = num3;
 
                 playerData.Sproutcat.cheekFluff.DrawSprites(sLeaser, timeStacker, camPos);
+                playerData.Sproutcat.backScales.DrawSprites(sLeaser, timeStacker, camPos);
             }
 
             playerData.ModCompat_DressMySlugcat_DrawSprites(rCam, sLeaser); //white tail in here
@@ -382,6 +391,7 @@ public class PlayerGrafHooks
                 sLeaser.sprites[playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX]].color = stripeColour;
 
                 playerData.Sproutcat.cheekFluff.ApplyPalette(sLeaser);
+                playerData.Sproutcat.backScales.ApplyPalette(sLeaser, stripeColour);
                 RopeMethods.ApplyPalette(self, sLeaser, stripeColour);
             }
         }

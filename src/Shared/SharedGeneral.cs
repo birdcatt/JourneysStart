@@ -16,7 +16,7 @@ public class SharedGeneral
 {
     public static void Hook()
     {
-        CutscenesSlideshows.Hook();
+        //CutscenesSlideshows.Hook();
         JollySelectMenu.Hook();
 
         OracleDialogue.Hook();

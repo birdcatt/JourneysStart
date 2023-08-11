@@ -15,12 +15,18 @@ using Vector2 = UnityEngine.Vector2;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using System.IO;
+using Exception = System.Exception;
 
 namespace JourneysStart.Shared.ArtOnScreen
 {
     public static class JollySelectMenu
     {
-        public static ConditionalWeakTable<JollyPlayerSelector, JollyMenuPortraits> ExtraPortraits = new();
+        private static readonly ConditionalWeakTable<JollyPlayerSelector, JollyMenuPortraits> _ExtraPortraits = new();
+        public static JollyMenuPortraits GetExtraPortraits(this JollyPlayerSelector jolly)
+            => _ExtraPortraits.GetValue(jolly, _ => new(jolly, jolly.dialog, jolly.portrait.pos, jolly.owner));
+
+        public static void GetExtraPortraits(this JollyPlayerSelector jolly, out JollyMenuPortraits portrait)
+            => portrait = jolly.GetExtraPortraits();
 
         public static void Hook()
         {
@@ -34,7 +40,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             IL.JollyCoop.JollyMenu.SymbolButtonToggle.LoadIcon += SymbolButtonToggle_LoadIcon;
             On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.Update += SymbolButtonTogglePupButton_Update;
 
-            On.JollyCoop.JollyMenu.JollyPlayerSelector.ctor += JollyPlayerSelector_ctor;
+            //On.JollyCoop.JollyMenu.JollyPlayerSelector.ctor += JollyPlayerSelector_ctor;
             On.JollyCoop.JollyMenu.JollyPlayerSelector.Update += JollyPlayerSelector_Update;
             On.JollyCoop.JollyMenu.JollyPlayerSelector.GrafUpdate += JollyPlayerSelector_GrafUpdate;
         }
@@ -83,7 +89,7 @@ namespace JourneysStart.Shared.ArtOnScreen
             return val;
         }
         #endregion
-
+        
         #region pup graphics
         public static bool SymbolButtonTogglePupButton_HasUniqueSprite(On.JollyCoop.JollyMenu.SymbolButtonTogglePupButton.orig_HasUniqueSprite orig, SymbolButtonTogglePupButton self)
         {
@@ -92,10 +98,6 @@ namespace JourneysStart.Shared.ArtOnScreen
         public static string JollyPlayerSelector_GetPupButtonOffName(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GetPupButtonOffName orig, JollyPlayerSelector self)
         {
             string val = orig(self);
-            //if (Utility.IsLightpup(self.JollyOptions(self.index).playerClass))
-            //    return Plugin.lghtbrpup + "_pup_off";
-            //if (Utility.IsSproutcat(self.JollyOptions(self.index).playerClass))
-            //    return Plugin.sproutcat + "_pup_off";
             if (Utility.IsModcat(self.JollyOptions(self.index).playerClass))
                 return self.JollyOptions(self.index).playerClass + "_pup_off";
             return val;
@@ -123,10 +125,20 @@ namespace JourneysStart.Shared.ArtOnScreen
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((SymbolButtonToggle self) =>
             {
-                self.symbol.fileName = "sproutcat_pup_on";
-                self.symbol.LoadFile();
-                self.symbol.sprite.SetElementByName(self.symbol.fileName);
-                self.symbol.fileName = self.symbolNameOn; //otherwise it forces you to be a pup in menu
+                try
+                {
+                    self.symbol.fileName = "sproutcat_pup_on";
+                    self.symbol.LoadFile();
+                    self.symbol.sprite.SetElementByName(self.symbol.fileName);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+                finally
+                {
+                    self.symbol.fileName = self.symbolNameOn; //otherwise it forces you to be a pup in menu
+                }
             });
             c.Emit(OpCodes.Ret);
 
@@ -143,8 +155,7 @@ namespace JourneysStart.Shared.ArtOnScreen
                     {
                         //self.symbolNameOn is "pup_on", not "sproutcat_pup_on" or smth
 
-                        if (null != self.uniqueSymbol)
-                            self.RemoveUniqueSymbol();
+                        self.RemoveUniqueSymbol();
 
                         self.uniqueSymbol = new MenuIllustration(self.menu, self, "", "unique_sproutcat_pup_on", self.size / 2f, true, true);
                         self.subObjects.Add(self.uniqueSymbol);
@@ -152,7 +163,7 @@ namespace JourneysStart.Shared.ArtOnScreen
                         self.uniqueSymbol.sprite.SetElementByName(self.uniqueSymbol.fileName);
                     }
                 }
-                else if (null != self.uniqueSymbol)
+                else
                 {
                     //just clean up, it should fix itself later in orig
                     self.RemoveUniqueSymbol();
@@ -162,44 +173,38 @@ namespace JourneysStart.Shared.ArtOnScreen
         }
         public static void RemoveUniqueSymbol(this SymbolButtonTogglePupButton self)
         {
-            self.uniqueSymbol.RemoveSprites();
-            self.subObjects.Remove(self.uniqueSymbol);
-            self.uniqueSymbol = null;
+            if (null != self.uniqueSymbol)
+            {
+                self.uniqueSymbol.RemoveSprites();
+                self.subObjects.Remove(self.uniqueSymbol);
+                self.uniqueSymbol = null;
+            }
         }
         #endregion
 
         #region custom portraits
-        public static void JollyPlayerSelector_ctor(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_ctor orig, JollyPlayerSelector self, JollySetupDialog menu, MenuObject owner, Vector2 pos, int index)
-        {
-            orig(self, menu, owner, pos, index);
-
-            if (!ExtraPortraits.TryGetValue(self, out _))
-                ExtraPortraits.Add(self, new JollyMenuPortraits(self, menu, self.portrait.pos, owner));
-        }
         public static void JollyPlayerSelector_Update(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_Update orig, JollyPlayerSelector self)
         {
             orig(self);
 
-            if (ExtraPortraits.TryGetValue(self, out JollyMenuPortraits p))
+            SlugcatStats.Name currentSlug = JollyCustom.SlugClassMenu(self.index, self.dialog.currentSlugcatPageName);
+            if (Utility.IsModcat(currentSlug) && (JollyColorMode.CUSTOM == self.dialog.Options.jollyColorMode || JollyColorMode.AUTO == self.dialog.Options.jollyColorMode && self.index != 0))
             {
-                SlugcatStats.Name currentSlug = JollyCustom.SlugClassMenu(self.index, self.dialog.currentSlugcatPageName);
-                if (Utility.IsModcat(currentSlug) && (JollyColorMode.CUSTOM == self.dialog.Options.jollyColorMode || JollyColorMode.AUTO == self.dialog.Options.jollyColorMode && self.index != 0))
-                {
-                    self.portrait.sprite.isVisible = false;
-                    p.EnableAllPortraits(currentSlug, new SlugcatStats.Name("JollyPlayer" + (self.index + 1).ToString(), false), self.JollyOptions(0).playerClass, self.index);
-                }
-                else
-                {
-                    self.portrait.sprite.isVisible = true;
-                    p.DisableAllPortraits();
-                }
+                self.portrait.sprite.isVisible = false;
+                self.GetExtraPortraits().EnableAllPortraits(currentSlug, new SlugcatStats.Name("JollyPlayer" + (self.index + 1).ToString()), self.JollyOptions(0).playerClass, self.index);
+            }
+            else
+            {
+                self.portrait.sprite.isVisible = true;
+                self.GetExtraPortraits().DisableAllPortraits();
             }
         }
         public static void JollyPlayerSelector_GrafUpdate(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GrafUpdate orig, JollyPlayerSelector self, float timeStacker)
         {
             orig(self, timeStacker);
 
-            if (ExtraPortraits.TryGetValue(self, out JollyMenuPortraits p) && p.PortraitsEnabled)
+            self.GetExtraPortraits(out var p);
+            if (p.PortraitsEnabled)
             {
                 p.Body.sprite.color = self.FadePortraitSprite(self.bodyTintColor, timeStacker);
                 p.Eyes.sprite.color = self.FadePortraitSprite(self.faceTintColor, timeStacker);

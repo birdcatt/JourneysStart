@@ -8,7 +8,7 @@ using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
 namespace JourneysStart.Shared.PlayerStuff;
 
-sealed class PlayerData
+public class PlayerData
 {
     //yeah ok you dont need a WeakRef to PlayerData for either modcat data
     //theres nothing here that really changes

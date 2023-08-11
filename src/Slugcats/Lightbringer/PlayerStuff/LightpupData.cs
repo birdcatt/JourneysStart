@@ -11,7 +11,7 @@ using JourneysStart.Shared.PlayerStuff;
 
 namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 
-sealed class LightpupData
+public class LightpupData
 {
     public PlayerData playerData;
 

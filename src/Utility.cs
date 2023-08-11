@@ -19,11 +19,33 @@ using SlugBase.DataTypes;
 using SlugBase.Features;
 using SlugBase;
 using RWCustom;
+using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
+using JourneysStart.Slugcats.Lightbringer.PlayerStuff;
+using JourneysStart.Slugcats.Strawberry;
 
 namespace JourneysStart
 {
     public static class Utility
     {
+        public static bool TryGetLightpup(this Player player, out LightpupData lightpup)
+        {
+            bool isLightpup = PlayerDataCWT.TryGetValue(player, out var pData) && pData.IsLightpup;
+            lightpup = isLightpup ? pData.Lightpup : null;
+            return isLightpup;
+        }
+        public static bool TryGetSproutcat(this Player player, out OutgrowthData sprout)
+        {
+            bool isSprout = PlayerDataCWT.TryGetValue(player, out var pData) && pData.IsSproutcat;
+            sprout = isSprout ? pData.Sproutcat : null;
+            return isSprout;
+        }
+        public static bool TryGetStrawberry(this Player player, out StrawberryData strawb)
+        {
+            bool isStrawb = PlayerDataCWT.TryGetValue(player, out var pData) && pData.IsStrawberry;
+            strawb = isStrawb ? pData.Strawberry : null;
+            return isStrawb;
+        }
+
         #region slug checks
         public static bool IsModcat(SlugcatStats.Name slugName)
         {

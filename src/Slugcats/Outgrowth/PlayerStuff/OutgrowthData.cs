@@ -8,10 +8,11 @@ using JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
 namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
-sealed class OutgrowthData
+public class OutgrowthData
 {
     public PlayerData playerData;
     public CheekFluff cheekFluff;
+    public BackScales backScales;
 
     public int[] spriteIndexes;
     //0 - body scar
