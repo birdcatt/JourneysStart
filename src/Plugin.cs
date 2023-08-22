@@ -9,6 +9,8 @@ using KeyCode = UnityEngine.KeyCode;
 
 using SlugBase.Features;
 using static SlugBase.Features.FeatureTypes;
+using SlugBase.DataTypes;
+
 using ImprovedInput;
 
 using JourneysStart.Shared;
@@ -16,7 +18,7 @@ using JourneysStart.FisobsItems;
 using JourneysStart.FisobsItems.Seed;
 using JourneysStart.FisobsItems.Taser;
 using JourneysStart.Shared.PlayerStuff.PlayerGraf;
-using PlayerData = JourneysStart.Shared.PlayerStuff.PlayerData;
+using PlayerData = JourneysStart.Slugcats.PlayerData;
 using JourneysStart.Slugcats.Lightbringer;
 using JourneysStart.Slugcats.Strawberry;
 using JourneysStart.Slugcats.Outgrowth;
@@ -35,7 +37,11 @@ namespace JourneysStart
         public static readonly SlugcatStats.Name lghtbrpup = new("Lightbringer");
         public static readonly SlugcatStats.Name sproutcat = new("sproutcat");
         public static readonly SlugcatStats.Name strawberry = new("Strawberry");
+
         public static ConditionalWeakTable<Player, PlayerData> PlayerDataCWT = new();
+
+        public static readonly EntityID StrawbYellowID = new(-1, 6720);
+        public static readonly EntityID StrawbBlueID = new(-1, 6721);
 
         public static Texture2D LightpupTailTexture;
         public static Texture2D SproutcatTailTexture;
@@ -44,12 +50,20 @@ namespace JourneysStart
         public static readonly PlayerKeybind FlareKeybind = PlayerKeybind.Register("JourneysStart:LightpupFlare", MOD_NAME, "Flare",
             KeyCode.LeftControl, KeyCode.Joystick1Button4);
 
-        #region sfx
+        #region outgrowth variables
         public static SoundID sproutcat_bush_rustle1;
         public static SoundID sproutcat_bush_rustle2;
         public static SoundID sproutcat_bush_rustle3;
         public static SoundID sproutcat_bush_rustle4;
         public static SoundID sproutcat_bush_rustle5;
+
+        public static PlayerColor FaceScar = new("Face Scar");
+        public static PlayerColor BodyScar = new("Body Scar");
+        public static PlayerColor TailScar = new("Tail Scar");
+        public static PlayerColor TailScales = new("Tail Scales");
+        public static PlayerColor MushroomNecklace = new("Necklace");
+        public static PlayerColor Vines = new("Vines");
+        public static PlayerColor Thorns = new("Vine Thorns");
         #endregion
 
         #region lightpup slugbase variables
@@ -76,9 +90,6 @@ namespace JourneysStart
         public static readonly PlayerFeature<bool> Sprout_Debug_NoAncientBot = PlayerBool("sproutcat/debug/no_ancient_bot");
         #endregion
 
-        private static bool isPostInit;
-        private static bool isOnDisabled;
-
         internal static bool ModEnabled_DressMySlugcat = false;
 
         // Add hooks
@@ -91,7 +102,6 @@ namespace JourneysStart
             FlareKeybind.SleepSuppressed = true;
 
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
-            //Hook();
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
             On.RainWorld.OnModsDisabled += RainWorld_OnModsDisabled;
         }
@@ -121,14 +131,17 @@ namespace JourneysStart
         }
 
         #region
+        private static bool _isPostInit;
+        private static bool _isOnDisabled;
+
         public void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
         {
             orig(self);
 
             try
             {
-                if (isPostInit) return;
-                isPostInit = true;
+                if (_isPostInit) return;
+                _isPostInit = true;
 
                 ModEnabled_DressMySlugcat = ModManager.ActiveMods.Any(mod => mod.id == "dressmyslugcat");
             }
@@ -143,8 +156,8 @@ namespace JourneysStart
 
             try
             {
-                if (isOnDisabled) return;
-                isOnDisabled = true;
+                if (_isOnDisabled) return;
+                _isOnDisabled = true;
 
                 if (newlyDisabledMods.Any(mod => mod.id == MOD_ID))
                 {

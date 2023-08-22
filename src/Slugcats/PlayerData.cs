@@ -1,12 +1,11 @@
-﻿using JourneysStart.Shared.PlayerStuff.PlayerGraf;
-using Colour = UnityEngine.Color;
+﻿using Colour = UnityEngine.Color;
 using System;
 using Debug = UnityEngine.Debug;
 using JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 using JourneysStart.Slugcats.Strawberry;
 using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 
-namespace JourneysStart.Shared.PlayerStuff;
+namespace JourneysStart.Slugcats;
 
 public class PlayerData
 {
@@ -15,10 +14,10 @@ public class PlayerData
 
     public WeakReference<Player> playerRef;
 
-    public readonly bool IsModcat;
-    public readonly bool IsLightpup;
-    public readonly bool IsSproutcat;
-    public readonly bool IsStrawberry;
+    public bool IsModcat => IsLightpup || IsSproutcat || IsStrawberry;
+    public bool IsLightpup => Lightpup != null;
+    public bool IsSproutcat => Sproutcat != null;
+    public bool IsStrawberry => Strawberry != null;
 
     public LightpupData Lightpup;
     public OutgrowthData Sproutcat;
@@ -28,50 +27,45 @@ public class PlayerData
     public SlugTailTexture tailPattern;
     public bool usingDMSHeadSprite;
 
-    public ModCompatibility.DressMySlugcatPatch dmsModCompat;
+    public ModCompat.DressMySlugcatPatch dmsModCompat;
 
     public PlayerData(Player player)
     {
         Debug.Log($"{Plugin.MOD_NAME}: Adding {player.SlugCatClass} player {player.playerState.playerNumber} to PlayerDataCWT");
+
         playerRef = new WeakReference<Player>(player);
 
+        if (Plugin.ModEnabled_DressMySlugcat)
+            dmsModCompat = new();
+
         SlugcatStats.Name name = player.slugcatStats.name;
+
         if (Plugin.lghtbrpup == name)
         {
-            IsModcat = true;
-            IsLightpup = true;
             Lightpup = new(this);
         }
         else if (Plugin.sproutcat == name)
         {
-            IsModcat = true;
-            IsSproutcat = true;
             Sproutcat = new(this);
         }
         else if (Plugin.strawberry == name)
         {
-            IsModcat = true;
-            IsStrawberry = true;
-            Strawberry = new();
+            Strawberry = new(this);
         }
         else
         {
             Debug.Log($"{Plugin.MOD_NAME}: How did {player.SlugCatClass} player {player.playerState.playerNumber} get in the PlayerDataCWT?!");
         }
-
-        tailPattern = new(player);
-
-        if (Plugin.ModEnabled_DressMySlugcat)
-            dmsModCompat = new();
     }
 
-    public void Update()
+    public void Update(bool eu)
     {
         if (!playerRef.TryGetTarget(out _))
             return;
 
         Lightpup?.Update();
         Sproutcat?.Update();
+        Strawberry?.Update(eu);
     }
 
     public void ModCompat_DressMySlugcat_DrawSprites(RoomCamera rCam, RoomCamera.SpriteLeaser sLeaser)

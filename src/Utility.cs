@@ -46,6 +46,17 @@ namespace JourneysStart
             return isStrawb;
         }
 
+        public static bool IsStrawbBlue(this Player player)
+        {
+            if (player.room == null) return false;
+            return IsStrawberry(player.room.game.StoryCharacter) && player.abstractCreature.ID == StrawbBlueID;
+        }
+        public static bool IsStrawbYellow(this Player player)
+        {
+            if (player.room == null) return false;
+            return IsStrawberry(player.room.game.StoryCharacter) && player.abstractCreature.ID == StrawbYellowID;
+        }
+
         #region slug checks
         public static bool IsModcat(SlugcatStats.Name slugName)
         {
@@ -170,7 +181,8 @@ namespace JourneysStart
         }
         #endregion
 
-        public static Colour GetSlugcatColour(Player player, int index)
+        #region player graphics
+        public static Colour GetColour(Player player, int index)
         {
             //only works for body, eye, and unique colour
             Colour colour = Colour.grey;
@@ -216,6 +228,33 @@ namespace JourneysStart
             }
             return colour;
         }
+
+        public static Colour? GetColour(PlayerGraphics pGraf, PlayerColor playerColour) => playerColour.GetColor(pGraf);
+
+        public static Colour GetMalnourishedColour(this PlayerGraphics self, Colour colour)
+        {
+            if (self.malnourished > 0f)
+            {
+                float num = self.player.Malnourished ? self.malnourished : Mathf.Max(0f, self.malnourished - 0.005f);
+                colour = Colour.Lerp(colour, Colour.gray, 0.4f * num);
+            }
+            return self.HypothermiaColorBlend(colour);
+        }
+        public static Colour? GetMalnourishedColour(this PlayerGraphics self, SlugBase.DataTypes.PlayerColor playerColour)
+        {
+            var colour = playerColour.GetColor(self);
+
+            if (colour == null)
+                return null;
+
+            if (self.malnourished > 0f)
+            {
+                float num = self.player.Malnourished ? self.malnourished : Mathf.Max(0f, self.malnourished - 0.005f);
+                colour = Colour.Lerp((Colour)colour, Colour.gray, 0.4f * num);
+            }
+            return self.HypothermiaColorBlend((Colour)colour);
+        }
+        #endregion
 
         #region outgrowth
         public static bool EdibleIsBug(IPlayerEdible eatenobject)

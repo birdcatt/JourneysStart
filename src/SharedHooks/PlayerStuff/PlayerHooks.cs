@@ -1,36 +1,16 @@
 ﻿using static JourneysStart.Plugin;
 using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using MSC_AbstractObjectType = MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType;
-using System.Linq;
-using JourneysStart.Shared.PlayerStuff;
-using JourneysStart.Shared.ArtOnScreen;
-using JourneysStart.Shared.PlayerStuff.PlayerGraf;
-using JourneysStart.Shared.OracleStuff;
 using JourneysStart.Slugcats.Lightbringer.MiscData;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using JourneysStart.Slugcats;
 
-namespace JourneysStart.Shared;
+namespace JourneysStart.Shared.PlayerStuff;
 
-public class SharedGeneral
+internal class PlayerHooks
 {
     public static void Hook()
-    {
-        //CutscenesSlideshows.Hook();
-        JollySelectMenu.Hook();
-
-        OracleDialogue.Hook();
-        PearlDialogue.Hook();
-
-        PlayerGrafHooks.Hook();
-        Crafting.Hook();
-
-        RoomScriptHooks.Hook();
-
-        GeneralHooks();
-    }
-
-    public static void GeneralHooks()
     {
         On.Player.ctor += Player_ctor;
         On.Player.Update += Player_Update;
@@ -40,12 +20,6 @@ public class SharedGeneral
         On.Player.Jump += Player_Jump;
         On.Player.ObjectEaten += Player_ObjectEaten; //food reaction + eating a bug
         IL.Player.Die += Player_Die;
-
-        On.SlugcatStats.SpearSpawnModifier += SlugcatStats_SpearSpawnModifier;
-        On.SlugcatStats.SpearSpawnElectricRandomChance += SpearSpawnElectricChance;
-        On.SlugcatStats.SpearSpawnExplosiveRandomChance += SpearSpawnExplosiveChance;
-
-        On.WorldLoader.OverseerSpawnConditions += WorldLoader_OverseerSpawnConditions;
     }
 
     #region player
@@ -66,7 +40,7 @@ public class SharedGeneral
             }
             else if (sproutcat == name)
             {
-                self.tongue = new(self, 0); //2nd arg is index
+                self.tongue = new(self, 0); //2nd arg is index of tongue (tubeworms have 2 tongues)
             }
         }
     }
@@ -75,7 +49,7 @@ public class SharedGeneral
         orig(self, eu);
         if (self.room != null && PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
         {
-            playerData.Update();
+            playerData.Update(eu);
         }
     }
     public static void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
@@ -120,13 +94,13 @@ public class SharedGeneral
 
         if (PlayerDataCWT.TryGetValue(self, out PlayerData playerData))
         {
-            if (playerData.IsSproutcat && Utility.EdibleIsBug(edible) && !playerData.Sproutcat.ateABugThisCycle)
-            {
-                playerData.Sproutcat.ateABugThisCycle = true;
-            }
+            //if (playerData.IsSproutcat && Utility.EdibleIsBug(edible) && !playerData.Sproutcat.ateABugThisCycle)
+            //{
+            //    playerData.Sproutcat.ateABugThisCycle = true;
+            //}
 
             #region lightpup food rxn
-            else if (playerData.IsLightpup && !self.exhausted) //please dont jump if youre chonk as all hell
+            if (playerData.IsLightpup && !self.exhausted) //please dont jump if youre chonk as all hell
             {
                 if (edible is Creature critter)
                 {
@@ -191,9 +165,16 @@ public class SharedGeneral
         c.Emit(OpCodes.Ldarg_0);
         c.EmitDelegate((Player self) =>
         {
-            return PlayerDataCWT.TryGetValue(self, out PlayerData pData)
-            && (pData.IsLightpup && pData.Lightpup.hitByZapcoil
-            || pData.IsSproutcat && pData.Sproutcat.pyroJump < MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value);
+            if (!PlayerDataCWT.TryGetValue(self, out PlayerData pData))
+                return false;
+
+            if (pData.IsLightpup)
+                return pData.Lightpup.hitByZapcoil;
+
+            if (pData.IsSproutcat)
+                return pData.Sproutcat.pyroJump < MoreSlugcats.MoreSlugcats.cfgArtificerExplosionCapacity.Value;
+
+            return false;
         });
         c.Emit(OpCodes.Brfalse, label);
 
@@ -219,59 +200,4 @@ public class SharedGeneral
     }
     #endregion
 
-    #region spear spawn chance
-    private static float SlugcatStats_SpearSpawnModifier(On.SlugcatStats.orig_SpearSpawnModifier orig, SlugcatStats.Name index, float originalSpearChance)
-    {
-        if (lghtbrpup == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
-        else if (sproutcat == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-        else if (strawberry == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
-        return orig(index, originalSpearChance);
-    }
-    public static float SpearSpawnElectricChance(On.SlugcatStats.orig_SpearSpawnElectricRandomChance orig, SlugcatStats.Name index)
-    {
-        if (lghtbrpup == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
-        else if (sproutcat == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-        else if (strawberry == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
-        return orig(index);
-    }
-    public static float SpearSpawnExplosiveChance(On.SlugcatStats.orig_SpearSpawnExplosiveRandomChance orig, SlugcatStats.Name index)
-    {
-        if (lghtbrpup == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear;
-        else if (sproutcat == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-        else if (strawberry == index)
-            index = MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint;
-        return orig(index);
-    }
-    #endregion
-
-    public static bool WorldLoader_OverseerSpawnConditions(On.WorldLoader.orig_OverseerSpawnConditions orig, WorldLoader self, SlugcatStats.Name character)
-    {
-        bool val = orig(self, character);
-        if (self.game.session is StoryGameSession story && !story.saveState.guideOverseerDead)
-        {
-            SaveState saveState = story.saveState;
-            if (lghtbrpup == story.game.StoryCharacter)
-            {
-                return Lightpup_Debug_OverseerSpawn.TryGet(story.game, out bool spawnNow) && spawnNow
-                    || Utility.ProgressionUnlocked(story) && !self.world.abstractRooms.Any(room => room.name == "AI");
-            }
-            if (sproutcat == story.game.StoryCharacter)
-            {
-                int cycleNumber = saveState.cycleNumber;
-                return UnityEngine.Random.value < self.world.region.regionParams.playerGuideOverseerSpawnChance
-                    && saveState.miscWorldSaveData.SSaiConversationsHad > 0
-                    && 9 < cycleNumber && cycleNumber < 25
-                    && !saveState.miscWorldSaveData.playerGuideState.angryWithPlayer;
-            }
-        }
-        return val;
-    }
 }

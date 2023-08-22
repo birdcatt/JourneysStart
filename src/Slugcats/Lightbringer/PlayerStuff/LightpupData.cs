@@ -7,7 +7,6 @@ using Debug = UnityEngine.Debug;
 using Colour = UnityEngine.Color;
 using Flare = JourneysStart.Slugcats.Lightbringer.MiscData.Flare;
 using JourneysStart.FisobsItems.Taser;
-using JourneysStart.Shared.PlayerStuff;
 
 namespace JourneysStart.Slugcats.Lightbringer.PlayerStuff;
 

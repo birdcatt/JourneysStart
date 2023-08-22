@@ -5,6 +5,8 @@ using static JourneysStart.Slugcats.Outgrowth.PlayerStuff.OutgrowthData;
 using RWCustom;
 using Colour = UnityEngine.Color;
 using JourneysStart.Slugcats.Outgrowth.Rope;
+using JourneysStart.Slugcats;
+using SlugBase.Features;
 
 namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
@@ -96,8 +98,6 @@ public static class PlayerGrafMethods
             for (int i = 0; i < self.ropeSegments.Length; i++)
             {
                 self.ropeSegments[i].Update();
-                //IndexOutOfRangeException: Index was outside the bounds of the array
-                //if i put ConnectRopeSegments here
             }
             for (int n = 1; n < self.ropeSegments.Length; n++)
             {
@@ -164,9 +164,11 @@ public static class PlayerGrafMethods
             }
         }
 
-        public static void ApplyPalette(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, Colour colour)
+        public static void ApplyPalette(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser)
         {
             Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData playerData);
+
+            var colour = self.GetMalnourishedColour(Plugin.Vines) ?? self.GetMalnourishedColour(playerData.tailPattern.OldPatternColour);
 
             int ropeIndex = playerData.Sproutcat.spriteIndexes[ROPE_INDEX];
             for (int i = 0; i < (sLeaser.sprites[ropeIndex] as TriangleMesh).verticeColors.Length; i++)

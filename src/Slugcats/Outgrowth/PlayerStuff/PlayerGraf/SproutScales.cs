@@ -6,7 +6,7 @@ using RWCustom;
 
 namespace JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
-public class BackScales
+public class SproutScales
 {
     //its just LizardCosmetics SpineSpikes
     public WeakReference<Player> playerRef;
@@ -17,7 +17,7 @@ public class BackScales
     public readonly int endIndex;
     public readonly int numberOfSprites;
 
-    public BackScales(PlayerGraphics pGraf, int startIndex)
+    public SproutScales(PlayerGraphics pGraf, int startIndex)
     {
         playerRef = new WeakReference<Player>(pGraf.player);
         this.startIndex = startIndex;
@@ -62,8 +62,12 @@ public class BackScales
         }
     }
 
-    public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, Colour colour)
+    public void ApplyPalette(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser)
     {
+        Plugin.PlayerDataCWT.TryGetValue(self.player, out var playerData);
+
+        var colour = self.GetMalnourishedColour(Plugin.TailScales) ?? self.GetMalnourishedColour(playerData.tailPattern.OldPatternColour);
+
         for (int i = startIndex; i < endIndex; i++)
         {
             sLeaser.sprites[i].color = colour;

@@ -5,7 +5,6 @@ using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using MSC_AbstractObjectType = MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType;
 using MoreSlugcats;
 using static JourneysStart.Utility;
-using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.FisobsItems.Taser;
 
 //this is quite painful by itself so lightbringer gets its own separate crafting cs file

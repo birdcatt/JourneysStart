@@ -1,11 +1,12 @@
 ﻿using System;
+using JourneysStart.Shared.PlayerStuff.PlayerGraf;
 using UnityEngine;
 using Colour = UnityEngine.Color;
 using Custom = RWCustom.Custom;
 
 //beecat started off most of this code o7 thanks
 //this code is quite ugly but also it works
-namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
+namespace JourneysStart.Slugcats
 {
     public class SlugTailTexture
     {
@@ -20,20 +21,21 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
         public readonly string TailTextureName;
         public Texture2D TailTexture;
 
-        //private Unity.Collections.NativeArray<byte> TextureMipData;
-
         private byte[] RedInTextureRef;
         private byte[] WhiteInTextureRef;
 
-        public SlugTailTexture(Player player)
+        public SlugTailTexture(PlayerGraphics pGraf)
         {
+            var player = pGraf.player;
+            playerRef = new WeakReference<Player>(player);
             SlugcatStats.Name name = player.slugcatStats.name;
-
             Debug.Log($"{Plugin.MOD_NAME}: (SlugTailTexture) Creating new tail texture for {name.value}");
+
+
             if (!Utility.IsModcat(name))
             {
+                //all the way down here just in case, so it won't crash
                 Debug.Log($"{Plugin.MOD_NAME}: Player {name} {player.playerState.playerNumber} is not supposed to get a new tail! How did this happen?!");
-                return;
             }
 
             if (Plugin.lghtbrpup == name)
@@ -52,27 +54,39 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
                 TailTexture = Plugin.StrawberryTailTexture;
             }
 
-            playerRef = new WeakReference<Player>(player);
 
-            //SetupColours(player);
-            BodyColour = Utility.GetSlugcatColour(player, 0);
-            PatternColour = Utility.GetSlugcatColour(player, 2);
+            if (Plugin.sproutcat == name)
+            {
+                PatternColour
+                    = Utility.GetColour(pGraf, Plugin.TailScar)
+                    ?? Utility.GetColour(player, 2);
+            }
+            else
+                PatternColour = Utility.GetColour(player, 2);
 
+            BodyColour = Utility.GetColour(player, 0);
             if (Colour.white == BodyColour)
-                BodyColour = Custom.hexToColor("feffff"); //pure white is not a viable body colour, since the stripes will colour the entire tail
+            {
+                //pure white is not a viable body colour, since the stripes will colour the entire tail
+                BodyColour = Custom.hexToColor("feffff");
+            }
+
 
             LoadTailAtlas();
 
             OldPatternColour = PatternColour;
 
+            RedInTextureRef = new byte[3];
             RedInTextureRef[0] = (byte)(BodyColour.r * 255);
             RedInTextureRef[1] = (byte)(BodyColour.g * 255);
             RedInTextureRef[2] = (byte)(BodyColour.b * 255);
 
+            WhiteInTextureRef = new byte[3];
             WhiteInTextureRef[0] = (byte)(PatternColour.r * 255);
             WhiteInTextureRef[1] = (byte)(PatternColour.g * 255);
             WhiteInTextureRef[2] = (byte)(PatternColour.b * 255);
         }
+
         ~SlugTailTexture()
         {
             try
@@ -100,11 +114,6 @@ namespace JourneysStart.Shared.PlayerStuff.PlayerGraf
         }
         public void LoadTailAtlasInGame()
         {
-            //if (playerRef.TryGetTarget(out Player player))
-            //{
-            //    Debug.Log($"{Plugin.MOD_NAME}: Recolouring tail for player {player.playerState.playerNumber}");
-            //}
-
             var mipData = (TailAtlas.texture as Texture2D).GetPixelData<byte>(0);
             //var mipData = TextureMipData;
             //mip map levels are different versions of a texture (for diff resolutions n all)

@@ -7,7 +7,7 @@ using RWCustom;
 
 namespace JourneysStart.FisobsItems.Seed;
 
-public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
+public class Seed : Weapon, IPlayerEdible
 {
     public Seed(SeedAbstract abstr) : base(abstr, abstr.world)
     {
@@ -155,3 +155,8 @@ public class Seed : /*PlayerCarryableItem*/ Weapon, /*IDrawable,*/ IPlayerEdible
     public bool AutomaticPickUp { get { return true; } }
     public void ThrowByPlayer() { }
 }
+
+//public class SeedSpores
+//{
+//    //SporeCloud but kill them all
+//}

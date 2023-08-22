@@ -4,7 +4,6 @@ public class StrawberryGeneral
 {
     public static void Hook()
     {
-        //PupHUD.Hook();
         GeneralHooks();
     }
     public static void GeneralHooks()
@@ -15,7 +14,7 @@ public class StrawberryGeneral
 
     private static bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        return orig(self, obj) || self.SlugCatClass == Plugin.strawberry && obj is Spear spear && spear.mode != Weapon.Mode.Thrown && spear.forbiddenToPlayer <= 0;
+        return orig(self, obj) || self.SlugCatClass == Plugin.strawberry && obj is Spear spear && spear.mode == Weapon.Mode.StuckInWall;
     }
 
     private static void Player_UpdateBodyMode(On.Player.orig_UpdateBodyMode orig, Player self)
@@ -28,7 +27,7 @@ public class StrawberryGeneral
             {
                 for (int i = 0; i < self.dynamicRunSpeed.Length; i++)
                 {
-                    self.dynamicRunSpeed[i] *= 1f + 0.75f;
+                    self.dynamicRunSpeed[i] *= 1f + 0.85f;
                 }
             }
             else if (Player.AnimationIndex.Roll == self.animation)

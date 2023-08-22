@@ -32,24 +32,30 @@ namespace JourneysStart.Slugcats.Lightbringer
             On.RegionGate.customKarmaGateRequirements += RegionGate_customKarmaGateRequirements;
         }
 
-        public static bool IsAIRoom(string name)
-        {
-            if (name.Length < "EX_AI".Length) //EX for example
-                return false;
-
-            int len = name.Length - 1;
-
-            return name[len - 2] == '_' && name[len - 1] == 'A' && name[len] == 'I';
-        }
-
         public static void WorldLoader_GeneratePopulation(On.WorldLoader.orig_GeneratePopulation orig, WorldLoader self, bool fresh)
         {
             //disable rot spawns even on modded regions except for iterator regions
+
+            static bool IsAIRoom(string name)
+            {
+                if (name.Length < "EX_AI".Length) //EX short for example
+                    return false;
+
+                int len = name.Length - 1;
+
+                return name[len - 2] == '_' && name[len - 1] == 'A' && name[len] == 'I';
+            }
+
             if (Utility.IsLightpup(self.game.StoryCharacter)
                 && !self.abstractRooms.Any(abstrRoom => IsAIRoom(abstrRoom.name)))
             {
-                self.spawners.RemoveAll(spawn => spawn is World.SimpleSpawner spawner && Utility.CreatureIsRot(StaticWorld.GetCreatureTemplate(spawner.creatureType).type));
+                self.spawners.RemoveAll
+                (
+                    spawn => spawn is World.SimpleSpawner spawner
+                    && Utility.CreatureIsRot(StaticWorld.GetCreatureTemplate(spawner.creatureType).type)
+                );
             }
+
             orig(self, fresh);
         }
 
@@ -81,6 +87,7 @@ namespace JourneysStart.Slugcats.Lightbringer
         {
             return orig(self) || Utility.ProgressionUnlocked(self.room.game);
         }
+
         public static void RegionGate_customKarmaGateRequirements(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
         {
             orig(self);

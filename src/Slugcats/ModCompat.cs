@@ -6,9 +6,9 @@ using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.Slugcats.Outgrowth.PlayerStuff;
 //using Debug = UnityEngine.Debug;
 
-namespace JourneysStart.Shared;
+namespace JourneysStart.Slugcats;
 
-public class ModCompatibility
+public class ModCompat
 {
     public class DressMySlugcatPatch
     {
@@ -27,7 +27,7 @@ public class ModCompatibility
                 return;
 
             Customization customization = Customization.For(self.player.slugcatStats.name.value, self.player.playerState.playerNumber);
-            
+
             if (pData.IsSproutcat) //or strawberry
             {
                 CheckHeadSprite(self, sLeaser, rCam, customization.CustomSprite("HEAD"));

@@ -4,7 +4,6 @@ using AbstractObjectType = AbstractPhysicalObject.AbstractObjectType;
 using System;
 using Debug = UnityEngine.Debug;
 using JourneysStart.FisobsItems.Seed;
-using JourneysStart.Shared.PlayerStuff;
 using Colour = UnityEngine.Color;
 
 namespace JourneysStart.Slugcats.Outgrowth.Food;
@@ -22,7 +21,7 @@ public class SeedSpitup
     {
         return Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p)
             && p.IsSproutcat
-            && (p.Sproutcat.seedSpitUpMax > 0 || self.FoodInStomach > 0)
+            //&& (p.Sproutcat.seedSpitUpMax > 0 || self.FoodInStomach > 0)
             && null == self.objectInStomach
             && -1 != self.FreeHand();
     }
@@ -32,18 +31,18 @@ public class SeedSpitup
     {
         if (self.objectInStomach == null && CanRegurgitate(self) && Plugin.PlayerDataCWT.TryGetValue(self, out PlayerData p) && p.IsSproutcat)
         {
-            if (p.Sproutcat.seedSpitUpMax > 0)
-            {
-                p.Sproutcat.seedSpitUpMax--;
-                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating free seed ({p.Sproutcat.seedSpitUpMax} left)");
-            }
-            else
-            {
-                self.SubtractFood(1);
-                Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating seed, subtracted food");
-            }
-            Colour baseCol = Utility.GetSlugcatColour(self, 0);
-            Colour seedCol = Utility.GetSlugcatColour(self, 2);
+            //if (p.Sproutcat.seedSpitUpMax > 0)
+            //{
+            //    p.Sproutcat.seedSpitUpMax--;
+            //    Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating free seed ({p.Sproutcat.seedSpitUpMax} left)");
+            //}
+            //else
+            //{
+            //    self.SubtractFood(1);
+            //    Debug.Log($"{Plugin.MOD_NAME}: (Outgrowth, Player_Regurgitate) Regurgitating seed, subtracted food");
+            //}
+            Colour baseCol = Utility.GetColour(self, 0);
+            Colour seedCol = Utility.GetColour(self, 2);
             self.objectInStomach = new SeedAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID(), baseCol, seedCol);
         }
         orig(self);

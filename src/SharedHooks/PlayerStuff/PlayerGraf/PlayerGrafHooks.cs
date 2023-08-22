@@ -7,6 +7,8 @@ using Mono.Cecil.Cil;
 using static JourneysStart.Slugcats.Outgrowth.PlayerStuff.OutgrowthData;
 using Vector2 = UnityEngine.Vector2;
 using static JourneysStart.Shared.PlayerStuff.PlayerGraf.PlayerGrafMethods;
+using JourneysStart.Slugcats;
+using SlugBase.DataTypes;
 
 namespace JourneysStart.Shared.PlayerStuff.PlayerGraf;
 
@@ -25,6 +27,19 @@ public class PlayerGrafHooks
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
         On.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
     }
+
+    public const int BODY_SPRITE = 0;
+    public const int HIPS_SPRITE = 1;
+    public const int TAIL_SPRITE = 2;
+    public const int HEAD_SPRITE = 3;
+    public const int LEGS_SPRITE = 4;
+    public const int ARM_L_SPRITE = 5;
+    public const int ARM_R_SPRITE = 6;
+    public const int HAND_L_SPRITE = 7;
+    public const int HAND_R_SPRITE = 8;
+    public const int FACE_SPRITE = 9;
+    public const int GLOW_SPRITE = 10;
+    public const int MARK_SPRITE = 11;
 
     #region sproutcat
     public static void PlayerGraphics_MSCUpdate(On.PlayerGraphics.orig_MSCUpdate orig, PlayerGraphics self)
@@ -73,8 +88,10 @@ public class PlayerGrafHooks
     {
         orig(self, ow);
 
-        if (Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData))
+        if (Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData pData) && pData.IsModcat)
         {
+            pData.tailPattern = new(self);
+
             if (pData.IsSproutcat)
             {
                 pData.Sproutcat.cheekFluff = new(self, 13);
@@ -151,7 +168,7 @@ public class PlayerGrafHooks
                     pData.Sproutcat.backScales.InitiateSprites(sLeaser);
                 }
 
-                #if true
+                #if DEBUG
                 Debug.Log($"{Plugin.MOD_NAME}: {self.player.SlugCatClass}'s sLeaser.sprites.Length is {sLeaser.sprites.Length}");
                 for (int i = 0; i < sLeaser.sprites.Length; i++)
                 {
@@ -259,14 +276,14 @@ public class PlayerGrafHooks
             else if (playerData.IsSproutcat)
             {
                 int bodyScarIndex = playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX];
-
-                sLeaser.sprites[bodyScarIndex].color = playerData.tailPattern.PatternColour;
+                sLeaser.sprites[bodyScarIndex].color = Plugin.BodyScar.GetColor(self) ?? playerData.tailPattern.PatternColour;
                 sLeaser.sprites[bodyScarIndex].x = xPos;
                 sLeaser.sprites[bodyScarIndex].y = yPos;
                 sLeaser.sprites[bodyScarIndex].rotation = Custom.AimFromOneVectorToAnother(vector2, vector); //index 0 rotation
                 //scaleX and scaleY done after orig
 
                 int faceScarIndex = playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX];
+                sLeaser.sprites[faceScarIndex].color = Plugin.FaceScar.GetColor(self) ?? playerData.tailPattern.PatternColour;
                 sLeaser.sprites[faceScarIndex].x = headPos.x - camPos.x;
                 sLeaser.sprites[faceScarIndex].y = headPos.y - camPos.y;
                 sLeaser.sprites[faceScarIndex].rotation = num3;
@@ -293,14 +310,6 @@ public class PlayerGrafHooks
                 if (Plugin.SkinnyScale_Index1.TryGet(self.player, out float scale1) && sLeaser.sprites[1].scale != scale1
                     && Plugin.StripeScale.TryGet(self.player, out float stripeScale))
                 {
-                    ////hes going ROUND
-                    //float bodyXYRatio = 14f / 19f; //i think its the body, not hips sprite, that i got this from
-                    //sLeaser.sprites[0].scale = Mathf.Max(sLeaser.sprites[0].scaleX, sLeaser.sprites[0].scaleY);
-                    //sLeaser.sprites[1].scale = Mathf.Max(sLeaser.sprites[1].scaleX, sLeaser.sprites[1].scaleY);
-                    //sLeaser.sprites[0].scale *= bodyXYRatio;
-                    //sLeaser.sprites[1].scale *= bodyXYRatio;
-                    ////OH MY GOD HES SO SKINNY
-
                     int stripeIndex = playerData.Lightpup.stripeIndex;
                     float scaleRatioX = sLeaser.sprites[1].scaleX / scale1;
                     float scaleRatioY = sLeaser.sprites[1].scaleY / scale1;
@@ -328,7 +337,6 @@ public class PlayerGrafHooks
                     {
                         if (sLeaser.sprites[3].scaleX < 0)
                         {
-                            //lmao jsSproutcatLeftScarjsSproutcatLeftHeadA4, don't swap this order
                             scarSpriteName = "jsSproutcatLeftScar" + headSpriteName;
                             headSpriteName = "jsSproutcatLeft" + headSpriteName;
                         }
@@ -343,6 +351,10 @@ public class PlayerGrafHooks
                         sLeaser.sprites[faceScarIndex].element = Futile.atlasManager.GetElementWithName(scarSpriteName);
                         sLeaser.sprites[faceScarIndex].scaleX = sLeaser.sprites[3].scaleX;
                         sLeaser.sprites[faceScarIndex].scaleY = sLeaser.sprites[3].scaleY;
+                    }
+                    else
+                    {
+                        sLeaser.sprites[faceScarIndex].isVisible = false;
                     }
                 }
 
@@ -370,29 +382,23 @@ public class PlayerGrafHooks
 
         if (Plugin.PlayerDataCWT.TryGetValue(self.player, out PlayerData playerData) && playerData.IsModcat)
         {
-            Colour stripeColour = playerData.tailPattern.OldPatternColour; //the unique colour
-            if (self.malnourished > 0f)
-            {
-                float num = self.player.Malnourished ? self.malnourished : Mathf.Max(0f, self.malnourished - 0.005f);
-                stripeColour = Colour.Lerp(stripeColour, Colour.gray, 0.4f * num);
-            }
-            stripeColour = self.HypothermiaColorBlend(stripeColour);
+            Colour tailPatternColour = self.GetMalnourishedColour(playerData.tailPattern.OldPatternColour);
 
-            playerData.tailPattern.RecolourTail(sLeaser.sprites[3].color, stripeColour);
+            playerData.tailPattern.RecolourTail(sLeaser.sprites[3].color, tailPatternColour);
             playerData.ModCompat_DressMySlugcat_DrawSprites(rCam, sLeaser);
 
             if (playerData.IsLightpup)
             {
-                sLeaser.sprites[playerData.Lightpup.stripeIndex].color = stripeColour; //body stripe
+                sLeaser.sprites[playerData.Lightpup.stripeIndex].color = tailPatternColour; //body stripe
             }
             else if (playerData.IsSproutcat)
             {
-                sLeaser.sprites[playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX]].color = stripeColour;
-                sLeaser.sprites[playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX]].color = stripeColour;
+                sLeaser.sprites[playerData.Sproutcat.spriteIndexes[BODY_SCAR_INDEX]].color = self.GetMalnourishedColour(Plugin.BodyScar) ?? tailPatternColour;
+                sLeaser.sprites[playerData.Sproutcat.spriteIndexes[FACE_SCAR_INDEX]].color = self.GetMalnourishedColour(Plugin.FaceScar) ?? tailPatternColour;
 
                 playerData.Sproutcat.cheekFluff.ApplyPalette(sLeaser);
-                playerData.Sproutcat.backScales.ApplyPalette(sLeaser, stripeColour);
-                RopeMethods.ApplyPalette(self, sLeaser, stripeColour);
+                playerData.Sproutcat.backScales.ApplyPalette(self, sLeaser);
+                RopeMethods.ApplyPalette(self, sLeaser);
             }
         }
     }

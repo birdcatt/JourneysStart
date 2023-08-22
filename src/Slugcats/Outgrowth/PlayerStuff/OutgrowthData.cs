@@ -2,7 +2,6 @@
 using Vector2 = UnityEngine.Vector2;
 using Mathf = UnityEngine.Mathf;
 using MoreSlugcats;
-using JourneysStart.Shared.PlayerStuff;
 using JourneysStart.Slugcats.Outgrowth.Rope;
 using JourneysStart.Slugcats.Outgrowth.PlayerStuff.PlayerGraf;
 
@@ -12,7 +11,7 @@ public class OutgrowthData
 {
     public PlayerData playerData;
     public CheekFluff cheekFluff;
-    public BackScales backScales;
+    public SproutScales backScales;
 
     public int[] spriteIndexes;
     //0 - body scar
@@ -27,8 +26,8 @@ public class OutgrowthData
 
     public bool usingDMSFaceSprite;
 
-    public int seedSpitUpMax;
-    public bool ateABugThisCycle;
+    //public int seedSpitUpMax;
+    //public bool ateABugThisCycle;
 
     public int inWater;
     public const int IN_WATER_MAX = 4 * 40;
@@ -41,18 +40,21 @@ public class OutgrowthData
     public const int PYRO_JUMP_CD_MAX = 60;
     public int pyroJumpCD = PYRO_JUMP_CD_MAX; //used to count down to when pyroJump should be reset
 
+    public readonly float prevLungsFac;
+
     public OutgrowthData(PlayerData playerData)
     {
         this.playerData = playerData;
-
-        ateABugThisCycle = false;
-        seedSpitUpMax = Random.Range(2, 5);
-
         playerData.playerRef.TryGetTarget(out Player player);
-        if (player.room.game.session is StoryGameSession story)
-        {
-            seedSpitUpMax = Mathf.Min(6, seedSpitUpMax + story.saveState.food);
-        }
+        prevLungsFac = player.slugcatStats.lungsFac;
+
+        //ateABugThisCycle = false;
+        //seedSpitUpMax = Random.Range(2, 5);
+
+        //if (player.room.game.session is StoryGameSession story)
+        //{
+        //    seedSpitUpMax = Mathf.Min(6, seedSpitUpMax + story.saveState.food);
+        //}
     }
 
     public void Update()
@@ -78,7 +80,8 @@ public class OutgrowthData
 
         if (player.FoodInStomach >= player.MaxFoodInStomach) //go drown badly if youre full
             player.slugcatStats.lungsFac = 1.3f;
-        //now add else if (get value from json) go back to normal
+        else
+            player.slugcatStats.lungsFac = prevLungsFac;
     }
 
     public void ClassMechanicsSproutcat()
@@ -146,10 +149,11 @@ public class OutgrowthData
         #endregion
     }
 
-    public bool CannotEatBugsThisCycle(IPlayerEdible eatenobject)
-    {
-        return ateABugThisCycle && Utility.EdibleIsBug(eatenobject);
-    }
+    //public bool CannotEatBugsThisCycle(IPlayerEdible eatenobject)
+    //{
+    //    return ateABugThisCycle && Utility.EdibleIsBug(eatenobject);
+    //}
+
     public bool CanShootTongue()
     {
         if (!playerData.playerRef.TryGetTarget(out Player player))
@@ -176,6 +180,6 @@ public class OutgrowthData
             return false;
 
         //if (cfgOldTongue), code elsewhere should take care of it
-        return !MMF.cfgOldTongue.Value && player.Consious && !player.corridorDrop;
+        return /*!MMF.cfgOldTongue.Value &&*/ player.Consious && !player.corridorDrop;
     }
 }

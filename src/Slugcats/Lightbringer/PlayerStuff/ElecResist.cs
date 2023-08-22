@@ -1,6 +1,5 @@
 ﻿using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using JourneysStart.Shared.PlayerStuff;
 using UnityEngine;
 using System;
 using RWCustom;

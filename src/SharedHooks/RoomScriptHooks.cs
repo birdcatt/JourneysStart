@@ -2,6 +2,7 @@
 using SlugBase;
 using static JourneysStart.Slugcats.Lightbringer.RoomScripts;
 using static JourneysStart.Slugcats.Outgrowth.RoomScripts;
+using static JourneysStart.Slugcats.Strawberry.RoomScripts;
 
 namespace JourneysStart.Shared
 {
@@ -20,6 +21,8 @@ namespace JourneysStart.Shared
             LightpupGateStart.alreadyRun = false; //god damn it
             LightpupOEStart.alreadyRun = false; //i hate this
             SproutcatLCStart.alreadyRun = false; //another one to the hall of shame
+            StrawberryStart.alreadyRun = false;
+
         }
         public static void OE_GourmandEnding_Update(On.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding self, bool eu)
         {
@@ -70,6 +73,11 @@ namespace JourneysStart.Shared
                     if ("LC_FINAL" == story.saveState.denPosition && "LC_FINAL" == roomName)
                         room.AddObject(new SproutcatLCStart(room));
                     //else if progression unlocked && the LC echo room && echo not in room/got LC echo
+                }
+                else if (Plugin.strawberry == story.game.StoryCharacter)
+                {
+                    if (story.saveState.cycleNumber == 0 && roomName == story.saveState.denPosition)
+                        room.AddObject(new StrawberryStart(room));
                 }
             }
 

@@ -11,11 +11,13 @@ public class Diet
 {
     public static void Hook()
     {
-        //On.Player.ObjectEaten hook in SharedGeneral
-        IL.Player.ObjectEaten += Player_ObjectEaten;
+        //Player.ObjectEaten hook is in SharedGeneral
+
+        //IL.Player.ObjectEaten += Player_ObjectEaten; //theres no more bug limitation on eating
         //IL.Player.BiteEdibleObject += Player_BiteEdibleObject; //this dont work lol
     }
 
+#if false
     public static void Player_ObjectEaten(ILContext il)
     {
         try
@@ -42,6 +44,7 @@ public class Diet
             Debug.LogException(e);
         }
     }
+#endif
 
     //public static void Player_BiteEdibleObject(ILContext il)
     //{
